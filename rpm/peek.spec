@@ -2,7 +2,7 @@
 
 Name:           peek
 Version:        1.5.1
-Release:        1%{?dist}
+Release:        18%{?dist}
 Summary:        Simple screen recorder with an easy to use interface
 
 License:        GPL-3.0-or-later
@@ -19,7 +19,7 @@ BuildRequires:  desktop-file-utils
 BuildRequires:  libappstream-glib
 BuildRequires:  txt2man
 BuildRequires:  gzip
-Requires:       ffmpeg >= 3
+Requires:       /usr/bin/ffmpeg
 Requires:       gstreamer1-plugins-good >= 1.2
 Recommends:     gstreamer1-plugins-ugly
 Suggests:       gifski
@@ -66,7 +66,7 @@ appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/metainfo/*.appdat
 
 
 %changelog
-* Thu Oct 29 2026 Roberto Fichera <roby.fichera@gmail.com> - 1.5.1-1
+* Thu Oct 29 2026 Roberto Fichera <roby.fichera@gmail.com> - 1.5.1-18
 - Build with meson, all features enabled
 
 * Thu Mar 29 2018 Philipp Wolfer <ph.wolfer@gmail.com> -1.3.1
