@@ -62,6 +62,9 @@ namespace Peek.Ui {
     private unowned Gtk.ComboBoxText recording_mp4_codec_combo_box;
 
     [GtkChild]
+    private unowned Gtk.CheckButton recording_mp4_vaapi;
+
+    [GtkChild]
     private unowned Gtk.Box recording_gifski_settings;
 
     [GtkChild]
@@ -113,6 +116,10 @@ namespace Peek.Ui {
         recording_mp4_codec_combo_box, "active_id",
         SettingsBindFlags.DEFAULT);
 
+      settings.bind ("recording-mp4-vaapi",
+        recording_mp4_vaapi, "active",
+        SettingsBindFlags.DEFAULT);
+
       settings.bind ("recording-gifski-enabled",
         recording_gifski_enabled, "active",
         SettingsBindFlags.DEFAULT);
@@ -150,6 +157,10 @@ namespace Peek.Ui {
         recording_gifski_quality_scale.add_mark (i, PositionType.BOTTOM, null);
       }
 
+      if (!FileUtils.test ("/dev/dri", FileTest.IS_DIR)) {
+        recording_mp4_vaapi.hide ();
+      }
+
       if (!PostProcessing.GifskiPostProcessor.is_available ()) {
         recording_gifski_settings.hide ();
       }
@@ -180,6 +191,7 @@ namespace Peek.Ui {
     private void on_output_format_changed () {
       recording_gifski_settings.sensitive = is_format (OutputFormat.GIF);
       recording_mp4_codec_box.sensitive = is_format (OutputFormat.MP4);
+      recording_mp4_vaapi.sensitive = is_format (OutputFormat.MP4);
       recording_capture_sound.sensitive = is_format (OutputFormat.MP4) || is_format (OutputFormat.WEBM);
     }
 

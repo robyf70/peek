@@ -23,6 +23,7 @@ namespace Peek.Recording {
 
         var args = new Array<string> ();
         args.append_val ("ffmpeg");
+        Ffmpeg.add_vaapi_device (args, config);
         // args.append_val ("-loglevel");
         // args.append_val ("debug");
 
@@ -68,7 +69,7 @@ namespace Peek.Recording {
           filter += ", crop=iw-mod(iw\\,2):ih-mod(ih\\,2)";
         }
 
-        args.append_val (filter);
+        args.append_val (Ffmpeg.add_vaapi_filter (filter, config));
 
         string extension;
         Ffmpeg.add_output_parameters (args, config, out extension);

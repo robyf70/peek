@@ -51,6 +51,10 @@
       <default>"h264"</default>
       <summary>Video codec for MP4 recordings</summary>
     </key>
+    <key name="recording-mp4-vaapi" type="b">
+      <default>false</default>
+      <summary>Encode MP4 recordings on the GPU with VAAPI</summary>
+    </key>
     <key name="recording-gifski-enabled" type="b">
       <default>false</default>
       <summary>Use gifski for high quality GIFs</summary>

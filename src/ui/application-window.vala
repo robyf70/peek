@@ -166,6 +166,10 @@ namespace Peek.Ui {
         this.recorder.config, "mp4_codec",
         SettingsBindFlags.DEFAULT);
 
+      settings.bind ("recording-mp4-vaapi",
+        this.recorder.config, "mp4_vaapi",
+        SettingsBindFlags.DEFAULT);
+
       settings.bind ("recording-gifski-enabled",
         this.recorder.config, "gifski_enabled",
         SettingsBindFlags.DEFAULT);
