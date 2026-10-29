@@ -8,6 +8,12 @@
 > The Peek project has been declared deprecated, please read [the announcement](https://github.com/phw/peek/issues/1191).
 > No new features will be developed and issue reporting has been closed.
 
+> [!NOTE]
+> This fork restores MP4 recording with a choice of H.264, H.265/HEVC or AV1,
+> optionally encoded on the GPU with VAAPI, and ships a Fedora RPM.
+> See [Fedora RPM from this fork](#fedora-rpm-from-this-fork) and
+> [How do I get H.264, H.265/HEVC and AV1 working?](#how-do-i-get-h264-h265hevc-and-av1-working).
+
 ![Peek recording itself](https://raw.githubusercontent.com/phw/peek/master/data/screenshots/peek-recording-itself.gif)
 
 Simple screen recorder with an easy to use interface
@@ -29,6 +35,7 @@ Simple screen recorder with an easy to use interface
   - [ElementaryOS](#elementaryos)
   - [Debian](#debian)
   - [Fedora](#fedora)
+  - [Fedora RPM from this fork](#fedora-rpm-from-this-fork)
   - [Solus](#solus)
   - [Arch Linux](#arch-linux)
   - [Other distributions](#other-distributions)
@@ -39,6 +46,7 @@ Simple screen recorder with an easy to use interface
   - [Why are the GIF files so big?](#why-are-the-gif-files-so-big)
   - [If GIF is so bad why use it at all?](#if-gif-is-so-bad-why-use-it-at-all)
   - [What about WebM or MP4? Those are well supported on the web.](#what-about-webm-or-mp4-those-are-well-supported-on-the-web)
+  - [How do I get H.264, H.265/HEVC and AV1 working?](#how-do-i-get-h264-h265hevc-and-av1-working)
   - [What is the cause for "Could not start GNOME Shell recorder" errors?](#what-is-the-cause-for-could-not-start-gnome-shell-recorder-errors)
   - [Why can't I interact with the UI elements inside the recording area?](#why-cant-i-interact-with-the-ui-elements-inside-the-recording-area)
   - [My recorded GIFs flicker, what is wrong?](#my-recorded-gifs-flicker-what-is-wrong)
@@ -57,11 +65,11 @@ for the specific use case of recording screen areas, e.g. for easily showing UI
 features of your own apps or for showing a bug in bug reports. With Peek, you
 simply place the Peek window over the area you want to record and press
 "Record". Peek is optimized for generating animated GIFs, but you can also
-directly record to WebM if you prefer.
+directly record to WebM or MP4 (H.264, H.265/HEVC or AV1) if you prefer.
 
 Peek is not a general purpose screencast app with extended features but
 rather focuses on the single task of creating small, silent screencasts of
-an area of the screen for creating GIF animations or silent WebM videos.
+an area of the screen for creating GIF animations or silent WebM or MP4 videos.
 
 Peek runs on X11 or inside a GNOME Shell Wayland session using XWayland.
 Support for more Wayland desktops might be added in the future (see FAQs below).
@@ -190,6 +198,26 @@ Once the repository is enabled install FFmpeg with:
 
     sudo dnf install ffmpeg
 
+### Fedora RPM from this fork
+Prebuilt RPMs are attached to the
+[releases of this fork](https://github.com/robyf70/peek/releases). The
+package is built with all features enabled (global keyboard shortcut, native
+file chooser, GNOME Shell recorder, open file manager) and restores MP4
+output. Its release number is higher than Fedora's own `peek` package, so it
+replaces it and is not downgraded by `dnf update`.
+
+    sudo dnf install https://github.com/robyf70/peek/releases/download/v1.5.1-20/peek-1.5.1-20.fc44.x86_64.rpm
+
+GIF, APNG and WebM work with Fedora's stock `ffmpeg-free`. For MP4 see
+[How do I get H.264, H.265/HEVC and AV1 working?](#how-do-i-get-h264-h265hevc-and-av1-working).
+
+To build the RPM yourself from a checkout:
+
+    sudo dnf install rpm-build meson vala gcc gettext gtk3-devel keybinder3-devel \
+      desktop-file-utils libappstream-glib txt2man
+    git archive --prefix=peek-1.5.1/ -o ~/rpmbuild/SOURCES/peek-1.5.1.tar.gz HEAD
+    rpmbuild -ba rpm/peek.spec
+
 ### Solus
 Solus users can simply install with:
 
@@ -280,9 +308,44 @@ format in the preferences. WebM is well supported by modern browsers, even
 though they are still not as universally supported by tools and online services
 as GIFs.
 
-> [!NOTE]
-> Support for MP4 was available till version 1.5.1 but was removed
-> from later versions.
+This fork also records MP4: choose MP4 as output format, then pick the codec
+under *MP4 video codec* in the preferences. See the next question for the
+codecs Peek needs.
+
+### How do I get H.264, H.265/HEVC and AV1 working?
+Peek encodes MP4 with FFmpeg (on X11; the GNOME Shell recorder always records
+H.264). Which codecs work depends on the FFmpeg libraries and, for hardware
+encoding, on the VAAPI driver installed:
+
+| Codec        | Software encoder | Hardware encoder (VAAPI) |
+|--------------|------------------|--------------------------|
+| H.264        | `libx264`        | `h264_vaapi`             |
+| H.265/HEVC   | `libx265`        | `hevc_vaapi`             |
+| AV1          | `libsvtav1`      | `av1_vaapi`              |
+
+On **Fedora** the stock `ffmpeg-free` lacks H.264 and H.265 for patent reasons.
+Enable the [RPM Fusion](https://rpmfusion.org/Configuration) free repository,
+then install the full codec libraries. They replace Fedora's at runtime without
+removing anything:
+
+    sudo dnf install libavcodec-freeworld
+
+For hardware encoding on AMD and Intel GPUs also install the VAAPI driver with
+H.264 and H.265 enabled. On Fedora 40 and later it installs next to the stock
+Mesa driver, so do not `dnf swap` it:
+
+    sudo dnf install mesa-va-drivers-freeworld
+
+Then tick *Use hardware encoding (VAAPI)* in the preferences. Peek uses the
+first GPU, `/dev/dri/renderD128`.
+
+To check what is available:
+
+    ffmpeg -hide_banner -encoders | grep -E 'libx26[45]|libsvtav1|_vaapi'
+    vainfo | grep EncSlice
+
+If a codec is missing, recording stops with an error from FFmpeg instead of
+producing an empty file.
 
 ### What is the cause for "Could not start GNOME Shell recorder" errors?
 
