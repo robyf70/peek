@@ -1,16 +1,17 @@
+%undefine _debugsource_packages
+
 Name:           peek
 Version:        1.5.1
 Release:        1%{?dist}
 Summary:        Simple screen recorder with an easy to use interface
 
-License:        GPLv3
+License:        GPL-3.0-or-later
 URL:            https://github.com/phw/peek
 Source0:        https://github.com/phw/peek/archive/%{version}.tar.gz#/%{name}-%{version}.tar.gz
 
 BuildRequires:  gcc
-BuildRequires:  cmake
+BuildRequires:  meson >= 0.47.0
 BuildRequires:  vala
-BuildRequires:  vala-devel
 BuildRequires:  gettext
 BuildRequires:  pkgconfig(gtk+-3.0) >= 3.20
 BuildRequires:  pkgconfig(keybinder-3.0)
@@ -37,13 +38,17 @@ directly record to WebM or MP4 if you prefer.
 
 
 %build
-%cmake -DBUILD_TESTS=OFF .
-%make_build
+%meson \
+  -Dbuild-tests=false \
+  -Denable-keybinder=enabled \
+  -Denable-filechoosernative=true \
+  -Denable-gnome-shell=true \
+  -Denable-open-file-manager=true
+%meson_build
 
 
 %install
-rm -rf $RPM_BUILD_ROOT
-%make_install
+%meson_install
 desktop-file-validate %{buildroot}/%{_datadir}/applications/com.uploadedlobster.%{name}.desktop
 appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/metainfo/*.appdata.xml
 %find_lang %{name}
@@ -56,11 +61,14 @@ appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/metainfo/*.appdat
 %{_datadir}/metainfo/com.uploadedlobster.%{name}.appdata.xml
 %{_datadir}/dbus-1/services/com.uploadedlobster.%{name}.service
 %{_datadir}/glib-2.0/schemas/com.uploadedlobster.%{name}.gschema.xml
-%{_datadir}/icons/hicolor/*/apps/com.uploadedlobster.%{name}.png
-%{_datadir}/man/man1/%{name}.1.gz
+%{_datadir}/icons/hicolor/*/apps/com.uploadedlobster.%{name}*.svg
+%{_mandir}/man1/%{name}.1*
 
 
 %changelog
+* Thu Oct 29 2026 Roberto Fichera <roby.fichera@gmail.com> - 1.5.1-1
+- Build with meson, all features enabled
+
 * Thu Mar 29 2018 Philipp Wolfer <ph.wolfer@gmail.com> -1.3.1
 - fix: Use yuv420p for VP9 encoding (#299)
 - fix: Disable animations and transitions on recording view overlays (#208)
