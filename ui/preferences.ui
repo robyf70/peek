@@ -241,6 +241,51 @@ Author: Philipp Wolfer <ph.wolfer@gmail.com>
               </packing>
             </child>
             <child>
+              <object class="GtkBox" id="recording_mp4_codec_box">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="spacing">12</property>
+                <property name="homogeneous">True</property>
+                <child>
+                  <object class="GtkLabel" id="recording_mp4_codec_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="hexpand">True</property>
+                    <property name="label" translatable="yes">MP4 video codec</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkComboBoxText" id="recording_mp4_codec_combo_box">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="active">0</property>
+                    <items>
+                      <item id="h264" translatable="yes">H.264</item>
+                      <item id="hevc" translatable="yes">H.265 / HEVC</item>
+                      <item id="av1" translatable="yes">AV1</item>
+                    </items>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkBox" id="recording_gifski_settings">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>

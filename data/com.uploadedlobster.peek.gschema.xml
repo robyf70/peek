@@ -42,6 +42,15 @@
       <default>"gif"</default>
       <summary>Output file format</summary>
     </key>
+    <key name="recording-mp4-codec" type="s">
+      <choices>
+        <choice value="h264"/>
+        <choice value="hevc"/>
+        <choice value="av1"/>
+      </choices>
+      <default>"h264"</default>
+      <summary>Video codec for MP4 recordings</summary>
+    </key>
     <key name="recording-gifski-enabled" type="b">
       <default>false</default>
       <summary>Use gifski for high quality GIFs</summary>

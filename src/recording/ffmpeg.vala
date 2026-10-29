@@ -27,14 +27,27 @@ namespace Peek.Recording.Ffmpeg {
     } else if (config.output_format == OutputFormat.MP4) {
       extension = Utils.get_file_extension_for_format (config.output_format);
       args.append_val ("-codec:v");
-      args.append_val ("libx264");
-      args.append_val ("-preset:v");
-      args.append_val ("fast");
-      if (!has_10bit_libx264 ()) {
-        args.append_val ("-profile:v");
-        args.append_val ("baseline");
+      if (config.mp4_codec == "hevc") {
+        args.append_val ("libx265");
+        args.append_val ("-preset:v");
+        args.append_val ("fast");
+        // Without the hvc1 tag Apple players refuse HEVC in MP4
+        args.append_val ("-tag:v");
+        args.append_val ("hvc1");
+      } else if (config.mp4_codec == "av1") {
+        args.append_val ("libsvtav1");
+        args.append_val ("-preset:v");
+        args.append_val ("8");
       } else {
-        stderr.printf ("Warning: libx264 compiled with 10bit support, baseline profile not available. The recorded MP4 might not be playable on all devices.\n");
+        args.append_val ("libx264");
+        args.append_val ("-preset:v");
+        args.append_val ("fast");
+        if (!has_10bit_libx264 ()) {
+          args.append_val ("-profile:v");
+          args.append_val ("baseline");
+        } else {
+          stderr.printf ("Warning: libx264 compiled with 10bit support, baseline profile not available. The recorded MP4 might not be playable on all devices.\n");
+        }
       }
       args.append_val ("-pix_fmt");
       args.append_val ("yuv420p");

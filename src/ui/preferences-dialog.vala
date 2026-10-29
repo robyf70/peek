@@ -56,6 +56,12 @@ namespace Peek.Ui {
     private unowned Gtk.ComboBoxText recording_output_format_combo_box;
 
     [GtkChild]
+    private unowned Gtk.Box recording_mp4_codec_box;
+
+    [GtkChild]
+    private unowned Gtk.ComboBoxText recording_mp4_codec_combo_box;
+
+    [GtkChild]
     private unowned Gtk.Box recording_gifski_settings;
 
     [GtkChild]
@@ -101,6 +107,10 @@ namespace Peek.Ui {
 
       settings.bind ("recording-output-format",
         recording_output_format_combo_box, "active_id",
+        SettingsBindFlags.DEFAULT);
+
+      settings.bind ("recording-mp4-codec",
+        recording_mp4_codec_combo_box, "active_id",
         SettingsBindFlags.DEFAULT);
 
       settings.bind ("recording-gifski-enabled",
@@ -169,6 +179,7 @@ namespace Peek.Ui {
     [GtkCallback]
     private void on_output_format_changed () {
       recording_gifski_settings.sensitive = is_format (OutputFormat.GIF);
+      recording_mp4_codec_box.sensitive = is_format (OutputFormat.MP4);
       recording_capture_sound.sensitive = is_format (OutputFormat.MP4) || is_format (OutputFormat.WEBM);
     }
 

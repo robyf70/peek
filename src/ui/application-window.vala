@@ -162,6 +162,10 @@ namespace Peek.Ui {
         this.recorder.config, "output_format",
         SettingsBindFlags.DEFAULT);
 
+      settings.bind ("recording-mp4-codec",
+        this.recorder.config, "mp4_codec",
+        SettingsBindFlags.DEFAULT);
+
       settings.bind ("recording-gifski-enabled",
         this.recorder.config, "gifski_enabled",
         SettingsBindFlags.DEFAULT);
