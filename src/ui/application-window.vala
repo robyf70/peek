@@ -57,6 +57,9 @@ namespace Peek.Ui {
     private unowned RadioButton webm_button;
 
     [GtkChild]
+    private unowned RadioButton mp4_button;
+
+    [GtkChild]
     private unowned MenuButton pop_format_menu;
 
     [GtkChild]
@@ -157,6 +160,14 @@ namespace Peek.Ui {
 
       settings.bind ("recording-output-format",
         this.recorder.config, "output_format",
+        SettingsBindFlags.DEFAULT);
+
+      settings.bind ("recording-mp4-codec",
+        this.recorder.config, "mp4_codec",
+        SettingsBindFlags.DEFAULT);
+
+      settings.bind ("recording-mp4-vaapi",
+        this.recorder.config, "mp4_vaapi",
         SettingsBindFlags.DEFAULT);
 
       settings.bind ("recording-gifski-enabled",
@@ -286,6 +297,7 @@ namespace Peek.Ui {
       switch (format) {
         case OutputFormat.APNG: return _ ("APNG");
         case OutputFormat.GIF: return _ ("GIF");
+        case OutputFormat.MP4: return _ ("MP4");
         case OutputFormat.WEBM: return _ ("WebM");
         default: return "";
       }
@@ -308,6 +320,9 @@ namespace Peek.Ui {
           break;
         case OutputFormat.WEBM:
           webm_button.set_active (true);
+          break;
+        case OutputFormat.MP4:
+          mp4_button.set_active (true);
           break;
       }
 
@@ -460,6 +475,8 @@ namespace Peek.Ui {
         select_format (OutputFormat.APNG);
       } else if (webm_button.get_active ()) {
         select_format (OutputFormat.WEBM);
+      } else if (mp4_button.get_active ()) {
+        select_format (OutputFormat.MP4);
       }
     }
 

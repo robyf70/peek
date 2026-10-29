@@ -30,15 +30,30 @@
       <choices>
         <choice value="gif"/>
         <choice value="apng"/>
+        <choice value="mp4"/>
         <choice value="webm"/>
       </choices>
       <aliases>
         <alias value="GIF" target="gif"/>
         <alias value="APNG" target="apng"/>
+        <alias value="MP4" target="mp4"/>
         <alias value="WebM" target="webm"/>
       </aliases>
       <default>"gif"</default>
       <summary>Output file format</summary>
+    </key>
+    <key name="recording-mp4-codec" type="s">
+      <choices>
+        <choice value="h264"/>
+        <choice value="hevc"/>
+        <choice value="av1"/>
+      </choices>
+      <default>"h264"</default>
+      <summary>Video codec for MP4 recordings</summary>
+    </key>
+    <key name="recording-mp4-vaapi" type="b">
+      <default>false</default>
+      <summary>Encode MP4 recordings on the GPU with VAAPI</summary>
     </key>
     <key name="recording-gifski-enabled" type="b">
       <default>false</default>
