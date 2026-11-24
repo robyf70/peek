@@ -32,6 +32,10 @@
         <choice value="apng"/>
         <choice value="mp4"/>
         <choice value="webm"/>
+        <choice value="still-gif"/>
+        <choice value="png"/>
+        <choice value="jpeg"/>
+        <choice value="bmp"/>
       </choices>
       <aliases>
         <alias value="GIF" target="gif"/>

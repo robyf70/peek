@@ -21,7 +21,11 @@ namespace Peek {
     APNG,
     GIF,
     MP4,
-    WEBM;
+    WEBM,
+    STILL_GIF,
+    PNG,
+    JPEG,
+    BMP;
 
     public string to_string() {
       switch (this) {
@@ -33,8 +37,31 @@ namespace Peek {
           return "webm";
         case MP4:
           return "mp4";
+        case STILL_GIF:
+          return "still-gif";
+        case PNG:
+          return "png";
+        case JPEG:
+          return "jpeg";
+        case BMP:
+          return "bmp";
         default:
           assert_not_reached ();
+      }
+    }
+
+    /**
+    * Whether the format holds a single still image instead of a recording.
+    */
+    public bool is_image () {
+      switch (this) {
+        case STILL_GIF:
+        case PNG:
+        case JPEG:
+        case BMP:
+          return true;
+        default:
+          return false;
       }
     }
   }

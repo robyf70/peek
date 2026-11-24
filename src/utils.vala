@@ -58,7 +58,14 @@ namespace Peek {
     }
 
     public static string get_file_extension_for_format (OutputFormat output_format) {
-      return output_format.to_string ();
+      switch (output_format) {
+        case OutputFormat.STILL_GIF:
+          return "gif";
+        case OutputFormat.JPEG:
+          return "jpg";
+        default:
+          return output_format.to_string ();
+      }
     }
 
     public static bool string_is_empty (string? str) {
