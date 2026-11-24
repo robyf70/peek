@@ -44,4 +44,22 @@ if get_option('build-tests')
     ],
   )
   test('Testing cli-screen-recorder', test_utils)
+
+  # /snapshot/
+  test_snapshot = executable('test-snapshot',
+    'test-snapshot.vala',
+    join_paths(meson.source_root(), 'src/dbus/freedesktop-filemanager.vala'),
+    join_paths(meson.source_root(), 'src/desktop-integration.vala'),
+    join_paths(meson.source_root(), 'src/defaults.vala'),
+    join_paths(meson.source_root(), 'src/errordomain.vala'),
+    join_paths(meson.source_root(), 'src/utils.vala'),
+    join_paths(meson.source_root(), 'src/post-processing/cli-post-processor.vala'),
+    join_paths(meson.source_root(), 'src/post-processing/post-processor.vala'),
+    join_paths(meson.source_root(), 'src/recording/recording-area.vala'),
+    join_paths(meson.source_root(), 'src/recording/snapshot.vala'),
+    dependencies: [
+      dependency('gtk+-3.0'),
+    ],
+  )
+  test('Testing snapshot', test_snapshot)
 endif
