@@ -107,6 +107,9 @@ namespace Peek.Ui {
     // before the snapshot got saved.
     private OutputFormat? snapshot_format = null;
 
+    // Set while a snapshot is being encoded
+    private Snapshot? active_snapshot = null;
+
     private signal void recording_finished ();
 
     private GLib.Settings settings;
@@ -275,6 +278,16 @@ namespace Peek.Ui {
         this.is_postprocessing.to_string ()
       );
 
+      if (active_snapshot != null) {
+        // Nothing got saved yet, discard the snapshot and close.
+        this.recording_finished.connect (() => {
+          this.close ();
+        });
+        this.hide ();
+        active_snapshot.cancel ();
+        return true;
+      }
+
       if (recorder.is_recording || this.is_postprocessing) {
         // Recorder has stopped, but Peek is still saving / post processing the
         // file. Hide the window and close after it has finished.
@@ -355,7 +368,7 @@ namespace Peek.Ui {
       var format_name = get_format_name (format);
       string tooltip;
       if (format.is_image ()) {
-        record_button.set_label (_ ("Take snapshot as %s").printf (format_name));
+        record_button.set_label (_ ("Snapshot as %s").printf (format_name));
         icon_record_button.icon_name = "camera-photo-symbolic";
         tooltip = _ ("Take snapshot");
       } else {
@@ -648,6 +661,9 @@ namespace Peek.Ui {
         Source.remove (start_recording_event_source);
         start_recording_event_source = 0;
         leave_recording_state ();
+      } else if (active_snapshot != null) {
+        stop_button.sensitive = false;
+        active_snapshot.cancel ();
       } else if (!recorder.is_recording) {
         return;
       } else {
@@ -736,7 +752,6 @@ namespace Peek.Ui {
 
       start_recording_event_source = Timeout.add (SNAPSHOT_REDRAW_DELAY, () => {
         start_recording_event_source = 0;
-        stop_button.sensitive = false;
         is_postprocessing = true;
         save_snapshot.begin ();
         return false;
@@ -744,11 +759,31 @@ namespace Peek.Ui {
     }
 
     private async void save_snapshot () {
+      var snapshot = new Snapshot ();
+
       try {
         var pixbuf = Snapshot.grab (get_recording_area ());
-        in_file = yield Snapshot.encode (pixbuf, snapshot_format);
+        show_spinner ();
+        active_snapshot = snapshot;
+        in_file = yield snapshot.encode (pixbuf, snapshot_format);
+        active_snapshot = null;
+        hide_spinner ();
+
+        if (snapshot.is_cancelled) {
+          leave_recording_state ();
+          return;
+        }
+
+        stop_button.sensitive = false;
         show_file_chooser ();
       } catch (RecordingError e) {
+        active_snapshot = null;
+
+        if (snapshot.is_cancelled) {
+          leave_recording_state ();
+          return;
+        }
+
         stderr.printf ("Failed to take snapshot: %s\n", e.message);
         leave_recording_state ();
         ErrorDialog.present_single_instance (
@@ -791,16 +826,18 @@ namespace Peek.Ui {
       unfreeze_window_size ();
       hide_spinner ();
 
-      if (in_file != null) {
-        debug ("Deleting temp file %s\n", in_file.get_uri ());
-        in_file.delete_async.begin (Priority.DEFAULT, null, (obj, res) => {
+      // Forget the file now, a new recording might start while it gets deleted
+      var temp_file = this.in_file;
+      this.in_file = null;
+
+      if (temp_file != null) {
+        debug ("Deleting temp file %s\n", temp_file.get_uri ());
+        temp_file.delete_async.begin (Priority.DEFAULT, null, (obj, res) => {
           try {
-            bool delete_success = in_file.delete_async.end (res);
+            bool delete_success = temp_file.delete_async.end (res);
             debug ("Temp file deleted: %s\n", delete_success.to_string ());
           } catch (Error e) {
             stderr.printf ("Temp file delete error: %s\n", e.message);
-          } finally {
-            this.in_file = null;
           }
 
           recording_finished ();

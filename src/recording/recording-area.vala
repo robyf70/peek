@@ -44,24 +44,7 @@ namespace Peek.Recording {
       var screen_height = screen.get_height ();
       debug ("Screen w: %d, h: %d", screen_width, screen_height);
 
-      if (area.left < 0) {
-        area.width += area.left;
-      }
-
-      if (area.top < 0) {
-        area.height += area.top;
-      }
-
-      area.left = int.min (int.max (0, area.left), screen_width);
-      area.top = int.min (int.max (0, area.top), screen_height);
-
-      if (area.left + area.width > screen_width) {
-        area.width = screen_width - area.left;
-      }
-
-      if (area.top + area.height > screen_height) {
-        area.height = screen_height - area.top;
-      }
+      area.clip (screen_width, screen_height);
 
       debug ("Clipped recording area x: %d, y: %d, w: %d, h: %d",
         area.left, area.top, area.width, area.height);
@@ -78,6 +61,31 @@ namespace Peek.Recording {
         area.left, area.top, area.width, area.height);
 
       return area;
+    }
+
+    /**
+    * Reduces the area to the visible part. Width or height will be zero or
+    * negative if the area is completely outside of the screen.
+    */
+    public void clip (int screen_width, int screen_height) {
+      if (left < 0) {
+        width += left;
+      }
+
+      if (top < 0) {
+        height += top;
+      }
+
+      left = int.min (int.max (0, left), screen_width);
+      top = int.min (int.max (0, top), screen_height);
+
+      if (left + width > screen_width) {
+        width = screen_width - left;
+      }
+
+      if (top + height > screen_height) {
+        height = screen_height - top;
+      }
     }
 
     public bool equals (RecordingArea? other) {

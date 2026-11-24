@@ -15,6 +15,10 @@ namespace Peek.Recording {
   public class Snapshot : Object {
     private const string JPEG_QUALITY = "95";
 
+    private StillGifConverter converter = new StillGifConverter ();
+
+    public bool is_cancelled { get; private set; default = false; }
+
     public static bool is_format_available (OutputFormat format) {
       // On Wayland the X11 root window does not contain native windows
       if (!format.is_image () || DesktopIntegration.is_wayland ()) {
@@ -50,18 +54,27 @@ namespace Peek.Recording {
     /**
     * Writes the image to a temporary file, which the caller has to delete.
     */
-    public static async File encode (Gdk.Pixbuf pixbuf, OutputFormat format) throws RecordingError {
+    public async File encode (Gdk.Pixbuf pixbuf, OutputFormat format) throws RecordingError {
       // gdk-pixbuf cannot write GIF, ffmpeg converts it from PNG.
       if (format == OutputFormat.STILL_GIF) {
         var png_file = save (pixbuf, OutputFormat.PNG);
         try {
-          return yield new StillGifConverter ().convert_async (png_file);
+          return yield converter.convert_async (png_file);
         } finally {
           FileUtils.remove (png_file.get_path ());
         }
       }
 
       return save (pixbuf, format);
+    }
+
+    /**
+    * Makes a running encode fail. If it just succeeded the caller still has to
+    * check is_cancelled.
+    */
+    public void cancel () {
+      is_cancelled = true;
+      converter.cancel ();
     }
 
     private static File save (Gdk.Pixbuf pixbuf, OutputFormat format) throws RecordingError {

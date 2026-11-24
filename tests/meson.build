@@ -45,6 +45,15 @@ if get_option('build-tests')
   )
   test('Testing cli-screen-recorder', test_utils)
 
+  test_recording_area = executable('test-recording-area',
+    'screen-recorder/test-recording-area.vala',
+    join_paths(meson.source_root(), 'src/recording/recording-area.vala'),
+    dependencies: [
+      dependency('gtk+-3.0'),
+    ],
+  )
+  test('Testing recording-area', test_recording_area)
+
   # /snapshot/
   test_snapshot = executable('test-snapshot',
     'test-snapshot.vala',
