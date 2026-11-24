@@ -45,6 +45,7 @@ Simple screen recorder with an easy to use interface
   - [How can I improve the quality of recorded GIF files](#how-can-i-improve-the-quality-of-recorded-gif-files)
   - [Why are the GIF files so big?](#why-are-the-gif-files-so-big)
   - [If GIF is so bad why use it at all?](#if-gif-is-so-bad-why-use-it-at-all)
+  - [Can I take a still image instead of a recording?](#can-i-take-a-still-image-instead-of-a-recording)
   - [What about WebM or MP4? Those are well supported on the web.](#what-about-webm-or-mp4-those-are-well-supported-on-the-web)
   - [How do I get H.264, H.265/HEVC and AV1 working?](#how-do-i-get-h264-h265hevc-and-av1-working)
   - [What is the cause for "Could not start GNOME Shell recorder" errors?](#what-is-the-cause-for-could-not-start-gnome-shell-recorder-errors)
@@ -301,6 +302,12 @@ everywhere, which means you can add animations easily to everywhere where you
 can upload images. With real video files you are still more limited. Typical use
 cases for Peek are recording small user interactions for showing UI features
 of an app you developed, for making short tutorials or for reporting bugs.
+
+### Can I take a still image instead of a recording?
+Yes, open the format menu and select GIF, PNG, JPEG or BMP below *Take
+snapshot*. The button, the keyboard shortcut and `--start` then save a single
+image of the area. The image is always in full resolution and does not contain
+the mouse cursor. Snapshots require X11, the still GIF also requires FFmpeg.
 
 ### What about WebM or MP4? Those are well supported on the web.
 Peek allows you to record in WebM format, just choose your preferred output

@@ -12,6 +12,9 @@ DESCRIPTION
   "Record". Peek is optimized for generating animated GIFs, but you can also
   directly record to WebM or MP4 if you prefer.
 
+  Select GIF, PNG, JPEG or BMP below "Take snapshot" in the format menu to save
+  a single still image of the area instead (X11 only).
+
   Peek is not a general purpose screencast app with extended features but rather
   focuses on the single task of creating small, silent screencasts of an area of
   the screen for creating GIF animations or silent WebM or MP4 videos.
