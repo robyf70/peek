@@ -476,6 +476,48 @@ msgstr "Dimesione e posizione dell'ultima finestra principale aperta"
 msgid "Path where last video got saved"
 msgstr "Percorso dove l'ultimo video è stato salvato"
 
+#: src/ui/application-window.vala
+#, c-format
+msgid "Snapshot as %s"
+msgstr "Istantanea come %s"
+
+#: src/ui/application-window.vala ui/application-window.ui
+msgid "Take snapshot"
+msgstr "Cattura istantanea"
+
+#: src/ui/application-window.vala
+msgid "The snapshot could not be taken."
+msgstr "Impossibile catturare l'istantanea."
+
+#: src/ui/application-window.vala
+msgid "Save image"
+msgstr "Salva immagine"
+
+#: src/ui/application-window.vala
+#, c-format
+msgid "Image saved as “%s”"
+msgstr "Immagine salvata come “%s”"
+
+#: ui/application-window.ui
+msgid "Record animation"
+msgstr "Registra animazione"
+
+#: ui/preferences.ui
+msgid "Still GIF"
+msgstr "GIF statica"
+
+#: ui/application-window.ui
+msgid "PNG"
+msgstr "PNG"
+
+#: ui/application-window.ui
+msgid "JPEG"
+msgstr "JPEG"
+
+#: ui/application-window.ui
+msgid "BMP"
+msgstr "BMP"
+
 #~ msgid "MP4"
 #~ msgstr "MP4"
 
