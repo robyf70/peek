@@ -343,8 +343,12 @@ namespace Peek.Ui {
       var format = recorder.config.output_format;
 
       if (format.is_image () && !Snapshot.is_format_available (format)) {
-        // Triggers another update
-        select_format (OutputFormat.GIF);
+        // Triggers another update. GSettings ignores changes made while it is
+        // itself updating the property, so this has to wait.
+        Idle.add (() => {
+          select_format (OutputFormat.GIF);
+          return false;
+        });
         return;
       }
 
@@ -451,6 +455,16 @@ namespace Peek.Ui {
       return RecordingArea.create_for_widget (recording_view);
     }
 
+    /**
+    * Size of the recording view in device pixels, including parts outside of
+    * the screen.
+    */
+    public void get_recording_view_size (out int width, out int height) {
+      var scale_factor = recording_view.get_scale_factor ();
+      width = recording_view.get_allocated_width () * scale_factor;
+      height = recording_view.get_allocated_height () * scale_factor;
+    }
+
     public void resize_recording_area (int width, int height) {
       if (is_recording) {
         return;
@@ -459,7 +473,9 @@ namespace Peek.Ui {
       int window_width;
       int window_height;
       get_size (out window_width, out window_height);
-      var area = this.get_recording_area ();
+      int view_width;
+      int view_height;
+      get_recording_view_size (out view_width, out view_height);
 
       // Update the UI elements to reflect the future window size
       update_ui_size (RecordingArea () {
@@ -469,8 +485,8 @@ namespace Peek.Ui {
 
       // Resize the window so that the recording areas results in the requested size.
       this.resize (
-        width + (window_width - area.width),
-        height + (window_height - area.height));
+        width + (window_width - view_width),
+        height + (window_height - view_height));
     }
 
     private void show_size_indicator () {

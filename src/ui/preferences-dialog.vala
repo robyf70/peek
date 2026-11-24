@@ -8,6 +8,7 @@ This software is licensed under the GNU General Public License
 */
 
 using Gtk;
+using Peek.Recording;
 
 namespace Peek.Ui {
 
@@ -108,6 +109,16 @@ namespace Peek.Ui {
         interface_show_notification, "active",
         SettingsBindFlags.DEFAULT);
 
+      // Offer only the image formats which can be used
+      OutputFormat[] image_formats = {
+        OutputFormat.STILL_GIF, OutputFormat.PNG, OutputFormat.JPEG, OutputFormat.BMP
+      };
+      foreach (var format in image_formats) {
+        if (!Snapshot.is_format_available (format)) {
+          remove_output_format (format);
+        }
+      }
+
       settings.bind ("recording-output-format",
         recording_output_format_combo_box, "active_id",
         SettingsBindFlags.DEFAULT);
@@ -198,6 +209,19 @@ namespace Peek.Ui {
     [GtkCallback]
     private void on_gifski_toggled (ToggleButton source) {
       recording_gifski_quality_box.sensitive = source.active;
+    }
+
+    private void remove_output_format (OutputFormat format) {
+      var model = recording_output_format_combo_box.model;
+      TreeIter iter;
+      for (int i = 0; model.iter_nth_child (out iter, null, i); i++) {
+        string id;
+        model.get (iter, recording_output_format_combo_box.id_column, out id);
+        if (id == format.to_string ()) {
+          recording_output_format_combo_box.remove (i);
+          return;
+        }
+      }
     }
 
     private bool is_format (OutputFormat format) {

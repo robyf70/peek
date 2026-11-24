@@ -24,9 +24,10 @@ namespace Peek.Ui {
         });
       }
 
-      var area = main_window.get_recording_area ();
-      instance.height = area.height;
-      instance.width = area.width;
+      int width, height;
+      main_window.get_recording_view_size (out width, out height);
+      instance.height = height;
+      instance.width = width;
 
       instance.transient_for = main_window;
       instance.present ();
