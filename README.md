@@ -207,7 +207,7 @@ file chooser, GNOME Shell recorder, open file manager) and restores MP4
 output. Its release number is higher than Fedora's own `peek` package, so it
 replaces it and is not downgraded by `dnf update`.
 
-    sudo dnf install https://github.com/robyf70/peek/releases/download/v1.5.1-20/peek-1.5.1-20.fc44.x86_64.rpm
+    sudo dnf install https://github.com/robyf70/peek/releases/download/v1.5.1-21/peek-1.5.1-21.fc44.x86_64.rpm
 
 GIF, APNG and WebM work with Fedora's stock `ffmpeg-free`. For MP4 see
 [How do I get H.264, H.265/HEVC and AV1 working?](#how-do-i-get-h264-h265hevc-and-av1-working).
