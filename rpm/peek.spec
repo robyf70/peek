@@ -2,7 +2,7 @@
 
 Name:           peek
 Version:        1.5.1
-Release:        20%{?dist}
+Release:        21%{?dist}
 Summary:        Simple screen recorder with an easy to use interface
 
 License:        GPL-3.0-or-later
@@ -66,6 +66,9 @@ appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/metainfo/*.appdat
 
 
 %changelog
+* Tue Nov 24 2026 Roberto Fichera <roby.fichera@gmail.com> - 1.5.1-21
+- Take a snapshot of the area as GIF, PNG, JPEG or BMP
+
 * Thu Oct 29 2026 Roberto Fichera <roby.fichera@gmail.com> - 1.5.1-20
 - Optional VAAPI hardware encoding for MP4
 
