@@ -60,6 +60,21 @@ namespace Peek.Ui {
     private unowned RadioButton mp4_button;
 
     [GtkChild]
+    private unowned RadioButton still_gif_button;
+
+    [GtkChild]
+    private unowned RadioButton png_button;
+
+    [GtkChild]
+    private unowned RadioButton jpeg_button;
+
+    [GtkChild]
+    private unowned RadioButton bmp_button;
+
+    [GtkChild]
+    private unowned Image icon_record_button;
+
+    [GtkChild]
     private unowned MenuButton pop_format_menu;
 
     [GtkChild]
@@ -88,11 +103,19 @@ namespace Peek.Ui {
     private RecordingArea active_recording_area;
     private string stop_button_label;
 
+    // Set while a snapshot is being taken. The configured format might change
+    // before the snapshot got saved.
+    private OutputFormat? snapshot_format = null;
+
     private signal void recording_finished ();
 
     private GLib.Settings settings;
 
     private const int SMALL_WINDOW_SIZE = 400;
+
+    // Time in ms for the compositor and the windows below to redraw the
+    // recording area after the labels on it got hidden.
+    private const uint SNAPSHOT_REDRAW_DELAY = 200;
 
     public ApplicationWindow (Peek.Application application,
       ScreenRecorder recorder) {
@@ -202,6 +225,11 @@ namespace Peek.Ui {
         this, "save_folder",
         SettingsBindFlags.DEFAULT);
 
+      still_gif_button.sensitive = Snapshot.is_format_available (OutputFormat.STILL_GIF);
+      png_button.sensitive = Snapshot.is_format_available (OutputFormat.PNG);
+      jpeg_button.sensitive = Snapshot.is_format_available (OutputFormat.JPEG);
+      bmp_button.sensitive = Snapshot.is_format_available (OutputFormat.BMP);
+
       // Update record button label when recording format changes
       this.recorder.config.notify["output-format"].connect ((pspec) => {
         update_format_label ();
@@ -299,6 +327,10 @@ namespace Peek.Ui {
         case OutputFormat.GIF: return _ ("GIF");
         case OutputFormat.MP4: return _ ("MP4");
         case OutputFormat.WEBM: return _ ("WebM");
+        case OutputFormat.STILL_GIF: return _ ("GIF");
+        case OutputFormat.PNG: return _ ("PNG");
+        case OutputFormat.JPEG: return _ ("JPEG");
+        case OutputFormat.BMP: return _ ("BMP");
         default: return "";
       }
     }
@@ -308,10 +340,30 @@ namespace Peek.Ui {
     }
 
     private void update_format_label () {
-      var format_name = get_format_name (recorder.config.output_format);
-      record_button.set_label (_ ("Record as %s").printf (format_name));
+      var format = recorder.config.output_format;
 
-      switch (recorder.config.output_format) {
+      if (format.is_image () && !Snapshot.is_format_available (format)) {
+        // Triggers another update
+        select_format (OutputFormat.GIF);
+        return;
+      }
+
+      var format_name = get_format_name (format);
+      string tooltip;
+      if (format.is_image ()) {
+        record_button.set_label (_ ("Take snapshot as %s").printf (format_name));
+        icon_record_button.icon_name = "camera-photo-symbolic";
+        tooltip = _ ("Take snapshot");
+      } else {
+        record_button.set_label (_ ("Record as %s").printf (format_name));
+        icon_record_button.icon_name = "media-record-symbolic";
+        tooltip = _ ("Start recording");
+      }
+
+      icon_record_button.tooltip_text = tooltip;
+      record_button.get_accessible ().set_name (tooltip);
+
+      switch (format) {
         case OutputFormat.GIF:
           gif_button.set_active (true);
           break;
@@ -323,6 +375,18 @@ namespace Peek.Ui {
           break;
         case OutputFormat.MP4:
           mp4_button.set_active (true);
+          break;
+        case OutputFormat.STILL_GIF:
+          still_gif_button.set_active (true);
+          break;
+        case OutputFormat.PNG:
+          png_button.set_active (true);
+          break;
+        case OutputFormat.JPEG:
+          jpeg_button.set_active (true);
+          break;
+        case OutputFormat.BMP:
+          bmp_button.set_active (true);
           break;
       }
 
@@ -477,6 +541,14 @@ namespace Peek.Ui {
         select_format (OutputFormat.WEBM);
       } else if (mp4_button.get_active ()) {
         select_format (OutputFormat.MP4);
+      } else if (still_gif_button.get_active ()) {
+        select_format (OutputFormat.STILL_GIF);
+      } else if (png_button.get_active ()) {
+        select_format (OutputFormat.PNG);
+      } else if (jpeg_button.get_active ()) {
+        select_format (OutputFormat.JPEG);
+      } else if (bmp_button.get_active ()) {
+        select_format (OutputFormat.BMP);
       }
     }
 
@@ -598,6 +670,11 @@ namespace Peek.Ui {
     }
 
     private void start_recording () {
+      if (recorder.config.output_format.is_image ()) {
+        take_snapshot ();
+        return;
+      }
+
       // Actually start the recording on next idle time, making sure
       // all queued painting happens before this.
       start_recording_event_source = Idle.add_full (Priority.HIGH_IDLE, () => {
@@ -624,6 +701,47 @@ namespace Peek.Ui {
       });
     }
 
+    private void take_snapshot () {
+      snapshot_format = recorder.config.output_format;
+
+      // Nothing of Peek itself must be visible on the recording area
+      size_indicator.hide ();
+      shortcut_label.hide ();
+      delay_indicator.hide ();
+      pop_format.hide ();
+      pop_menu.hide ();
+
+      if (size_indicator_timeout != 0) {
+        Source.remove (size_indicator_timeout);
+        size_indicator_timeout = 0;
+      }
+
+      update_input_shape ();
+
+      start_recording_event_source = Timeout.add (SNAPSHOT_REDRAW_DELAY, () => {
+        start_recording_event_source = 0;
+        stop_button.sensitive = false;
+        is_postprocessing = true;
+        save_snapshot.begin ();
+        return false;
+      });
+    }
+
+    private async void save_snapshot () {
+      try {
+        var pixbuf = Snapshot.grab (get_recording_area ());
+        in_file = yield Snapshot.encode (pixbuf, snapshot_format);
+        show_file_chooser ();
+      } catch (RecordingError e) {
+        stderr.printf ("Failed to take snapshot: %s\n", e.message);
+        leave_recording_state ();
+        ErrorDialog.present_single_instance (
+          this,
+          _ ("The snapshot could not be taken."),
+          e);
+      }
+    }
+
     private void enter_recording_state () {
       if (!is_recording) {
         is_recording = true;
@@ -646,6 +764,7 @@ namespace Peek.Ui {
 
     private void leave_recording_state () {
       this.out_file = null;
+      this.snapshot_format = null;
       delay_indicator.hide ();
       is_recording = false;
       is_postprocessing = false;
@@ -735,14 +854,17 @@ namespace Peek.Ui {
     }
 
     private void show_file_chooser () {
+      var format = snapshot_format ?? recorder.config.output_format;
+      var title = format.is_image () ? _ ("Save image") : _ ("Save animation");
+
       #if HAS_GTK_FILECHOOSERNATIVE
       var chooser = new FileChooserNative (
-        _ ("Save animation"), this, FileChooserAction.SAVE,
+        title, this, FileChooserAction.SAVE,
         _ ("_Save"),
         _ ("_Cancel"));
       #else
       var chooser = new FileChooserDialog (
-        _ ("Save animation"), this, FileChooserAction.SAVE,
+        title, this, FileChooserAction.SAVE,
         _ ("_Cancel"),
         ResponseType.CANCEL);
       var ok_button = chooser.add_button (_ ("_Save"), ResponseType.ACCEPT);
@@ -751,8 +873,7 @@ namespace Peek.Ui {
 
       chooser.do_overwrite_confirmation = true;
 
-      string extension = Utils.get_file_extension_for_format (
-        recorder.config.output_format);
+      string extension = Utils.get_file_extension_for_format (format);
       string filename = default_file_name_format + "." + extension;
 
       var filter = new FileFilter ();
@@ -772,7 +893,10 @@ namespace Peek.Ui {
         this.out_file = chooser.get_file ();
         try_save_file ();
       } else {
-        recorder.cancel ();
+        if (snapshot_format == null) {
+          recorder.cancel ();
+        }
+
         leave_recording_state ();
       }
 
@@ -837,7 +961,11 @@ namespace Peek.Ui {
       if (this.visible && !show_notification) return;
 
       var message = new StringBuilder ("");
-      message.printf (_ ("Animation saved as “%s”"), file.get_basename ());
+      if (snapshot_format != null) {
+        message.printf (_ ("Image saved as “%s”"), file.get_basename ());
+      } else {
+        message.printf (_ ("Animation saved as “%s”"), file.get_basename ());
+      }
 
       var notification = build_standard_notification (message.str);
 

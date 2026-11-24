@@ -44,6 +44,14 @@ namespace Peek.Recording {
       var screen_height = screen.get_height ();
       debug ("Screen w: %d, h: %d", screen_width, screen_height);
 
+      if (area.left < 0) {
+        area.width += area.left;
+      }
+
+      if (area.top < 0) {
+        area.height += area.top;
+      }
+
       area.left = int.min (int.max (0, area.left), screen_width);
       area.top = int.min (int.max (0, area.top), screen_height);
 
