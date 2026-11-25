@@ -138,6 +138,9 @@ namespace Peek.Ui {
     // Peek shall close once the snapshot or recording is done
     private bool close_requested = false;
 
+    // Changes whenever a recording or snapshot has ended
+    private uint recording_id = 0;
+
     private signal void recording_finished ();
 
     private GLib.Settings settings;
@@ -1096,6 +1099,7 @@ namespace Peek.Ui {
     }
 
     private void leave_recording_state () {
+      recording_id++;
       destroy_annotation_window ();
       this.out_file = null;
       this.snapshot_format = null;
@@ -1245,7 +1249,15 @@ namespace Peek.Ui {
       chooser.set_current_name (default_name);
 
       debug ("Showing file chooser (%s)", chooser.get_type ().name ());
-      if (chooser.run () == ResponseType.ACCEPT) {
+      var id = recording_id;
+      var response = chooser.run ();
+      if (id != recording_id) {
+        // Aborted meanwhile, the answer must not affect the next recording.
+        // The chooser might have blocked a requested close.
+        if (!this.visible && !is_recording) {
+          this.close ();
+        }
+      } else if (response == ResponseType.ACCEPT) {
         debug ("Selected file %s", chooser.get_uri ());
         this.out_file = chooser.get_file ();
 
