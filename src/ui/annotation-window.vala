@@ -194,6 +194,7 @@ namespace Peek.Ui {
 
     private Gtk.Dialog? discard_dialog = null;
     private uint copied_message_timeout = 0;
+    private uint entry_style_idle = 0;
 
     public AnnotationWindow (Gtk.Window parent, Gdk.Pixbuf pixbuf, int scale,
       string format_name) {
@@ -223,6 +224,11 @@ namespace Peek.Ui {
 
       this.destroy.connect (() => {
         stop_copied_message ();
+
+        if (entry_style_idle != 0) {
+          Source.remove (entry_style_idle);
+          entry_style_idle = 0;
+        }
       });
 
       add_tool_buttons ();
@@ -626,9 +632,10 @@ namespace Peek.Ui {
 
     [GtkCallback]
     private void on_canvas_size_allocate (Widget widget, Allocation allocation) {
-      if (text_entry.visible) {
+      if (text_entry.visible && entry_style_idle == 0) {
         // The style must not change during the allocation
-        Idle.add (() => {
+        entry_style_idle = Idle.add (() => {
+          entry_style_idle = 0;
           update_entry_style ();
           return Source.REMOVE;
         });

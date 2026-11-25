@@ -202,7 +202,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="height_request">120</property>
-                <property name="events">GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_BUTTON_MOTION_MASK</property>
+                <property name="events">GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK</property>
                 <signal name="draw" handler="on_canvas_draw" swapped="no"/>
                 <signal name="realize" handler="on_canvas_realize" swapped="no"/>
                 <signal name="size-allocate" handler="on_canvas_size_allocate" swapped="no"/>

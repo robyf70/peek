@@ -314,8 +314,9 @@ saved: rectangle (R), circle (C), line (L), arrow (A), blur (B) and text (T),
 in six colors or a custom one, in three widths. Hold Shift for a square, a
 circle or 45° steps. Undo and redo are Ctrl+Z and Ctrl+Shift+Z. *Save* (Enter
 or Ctrl+S) opens the usual save dialog, *Copy* (Ctrl+C) puts the image on the
-clipboard, and Esc cancels, after asking if you drew something. The clipboard
-only outlives Peek if a clipboard manager is running.
+clipboard, and Esc cancels, after asking if there are changes you have not
+copied. While you type text, the letters are text, Enter confirms it and Esc
+discards it. The clipboard only outlives Peek if a clipboard manager is running.
 
 Blurred text can sometimes be recovered from the image, so cover real secrets
 such as passwords with something else, or do not capture them.
