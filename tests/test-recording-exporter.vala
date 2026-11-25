@@ -1140,6 +1140,28 @@ void test_cancel_after_end () {
   check_captured (captured);
 }
 
+// Otherwise the captured video would be saved as a GIF
+void test_no_conversion () {
+  foreach (var format in new OutputFormat[] { OutputFormat.GIF, OutputFormat.APNG }) {
+    File captured;
+    AnnotatedRecording recording;
+    Case c = { format, false, false, "" };
+    var exporter = create_case (c, out captured, out recording);
+    Environment.set_variable ("PATH", bin_dir, true);
+    try {
+      export (exporter, recording);
+      assert_not_reached ();
+    } catch (RecordingError e) {
+      assert (e is RecordingError.POSTPROCESSING_ABORTED);
+      assert (!exporter.is_cancelled);
+    } finally {
+      unset_fake_commands ();
+    }
+
+    check_captured (captured);
+  }
+}
+
 // Runs a shell script once or twice
 class ScriptStep : CliPostProcessor {
   private string script;
@@ -1336,6 +1358,7 @@ int main (string[] args) {
   Test.add_func ("/recording_exporter/cancel_while_rendering", test_cancel_while_rendering);
   Test.add_func ("/recording_exporter/cancel_after_end", test_cancel_after_end);
   Test.add_func ("/recording_exporter/change_while_rendering", test_change_while_rendering);
+  Test.add_func ("/recording_exporter/no_conversion", test_no_conversion);
   Test.add_func ("/recording_exporter/much_output", test_much_output);
   Test.add_func ("/recording_exporter/little_output", test_little_output);
   Test.add_func ("/recording_exporter/cancel_output", test_cancel_output);

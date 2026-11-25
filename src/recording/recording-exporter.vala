@@ -62,6 +62,12 @@ namespace Peek.Recording {
       var file = files.index (0);
       if (file.equal (captured)) {
         check_cancelled ();
+        if (config.output_format == OutputFormat.GIF
+            || config.output_format == OutputFormat.APNG) {
+          throw new RecordingError.POSTPROCESSING_ABORTED (
+            "No command was found to convert the recording.");
+        }
+
         return captured;
       }
 
