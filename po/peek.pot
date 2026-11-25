@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: peek\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-25 19:01+0100\n"
+"POT-Creation-Date: 2026-11-25 20:07+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -85,7 +85,6 @@ msgstr ""
 msgid "FFmpeg executable not found."
 msgstr ""
 
-#. In the order of Tool
 #: src/ui/annotation-window.vala:40
 msgid "Rectangle"
 msgstr ""
@@ -170,47 +169,47 @@ msgstr ""
 msgid "Thick"
 msgstr ""
 
-#: src/ui/annotation-window.vala:237
+#: src/ui/annotation-window.vala:244
 msgid "Annotate recording"
 msgstr ""
 
-#: src/ui/annotation-window.vala:238
+#: src/ui/annotation-window.vala:245
 msgid "Save the recording (Ctrl+S)"
 msgstr ""
 
 #. Questions asked by this window must not block other Peek windows
 #. / Translators: %s is the name of an image format, e.g. PNG
-#: src/ui/annotation-window.vala:261
+#: src/ui/annotation-window.vala:268
 #, c-format
 msgid "Save as %s…"
 msgstr ""
 
-#: src/ui/annotation-window.vala:334
+#: src/ui/annotation-window.vala:341
 msgid "Discard recording?"
 msgstr ""
 
-#: src/ui/annotation-window.vala:334
+#: src/ui/annotation-window.vala:341
 msgid "Discard annotations?"
 msgstr ""
 
-#: src/ui/annotation-window.vala:336
+#: src/ui/annotation-window.vala:343
 msgid "_Keep"
 msgstr ""
 
-#: src/ui/annotation-window.vala:336 src/ui/application-window.vala:1224
+#: src/ui/annotation-window.vala:343 src/ui/application-window.vala:1224
 #: src/ui/application-window.vala:1229
 msgid "_Cancel"
 msgstr ""
 
-#: src/ui/annotation-window.vala:337
+#: src/ui/annotation-window.vala:344
 msgid "_Discard"
 msgstr ""
 
-#: src/ui/annotation-window.vala:1030
+#: src/ui/annotation-window.vala:1075
 msgid "This frame could not be read."
 msgstr ""
 
-#: src/ui/annotation-window.vala:1035
+#: src/ui/annotation-window.vala:1080
 msgid "Image copied to the clipboard."
 msgstr ""
 
@@ -385,7 +384,7 @@ msgid "Items drawn on the recording are listed here."
 msgstr ""
 
 #. / Translators: %d is the number of a frame in a recording, from 1
-#: src/ui/recording-timeline.vala:279
+#: src/ui/recording-timeline.vala:283
 #, c-format
 msgid "Frame %d"
 msgstr ""

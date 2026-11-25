@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Peek\n"
 "Report-Msgid-Bugs-To: ph.wolfer@gmail.com\n"
-"POT-Creation-Date: 2026-11-25 19:01+0100\n"
+"POT-Creation-Date: 2026-11-25 20:07+0100\n"
 "PO-Revision-Date: 2024-06-14 18:09+0000\n"
 "Last-Translator: albanobattistella <albano_battistella@hotmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/peek/translations/it/>\n"
@@ -90,7 +90,6 @@ msgstr "Peek richiede FFmpeg o l'esecuzione da una sessione di shell GNOME."
 msgid "FFmpeg executable not found."
 msgstr "Eseguibile FFmpeg non trovato."
 
-#. In the order of Tool
 #: src/ui/annotation-window.vala:40
 msgid "Rectangle"
 msgstr "Rettangolo"
@@ -181,47 +180,47 @@ msgstr "Medio"
 msgid "Thick"
 msgstr "Spesso"
 
-#: src/ui/annotation-window.vala:237
+#: src/ui/annotation-window.vala:244
 msgid "Annotate recording"
 msgstr "Annota registrazione"
 
-#: src/ui/annotation-window.vala:238
+#: src/ui/annotation-window.vala:245
 msgid "Save the recording (Ctrl+S)"
 msgstr "Salva la registrazione (Ctrl+S)"
 
 #. Questions asked by this window must not block other Peek windows
 #. / Translators: %s is the name of an image format, e.g. PNG
-#: src/ui/annotation-window.vala:261
+#: src/ui/annotation-window.vala:268
 #, c-format
 msgid "Save as %s…"
 msgstr "Salva come %s…"
 
-#: src/ui/annotation-window.vala:334
+#: src/ui/annotation-window.vala:341
 msgid "Discard recording?"
 msgstr "Scartare la registrazione?"
 
-#: src/ui/annotation-window.vala:334
+#: src/ui/annotation-window.vala:341
 msgid "Discard annotations?"
 msgstr "Scartare le annotazioni?"
 
-#: src/ui/annotation-window.vala:336
+#: src/ui/annotation-window.vala:343
 msgid "_Keep"
 msgstr "_Mantieni"
 
-#: src/ui/annotation-window.vala:336 src/ui/application-window.vala:1224
+#: src/ui/annotation-window.vala:343 src/ui/application-window.vala:1224
 #: src/ui/application-window.vala:1229
 msgid "_Cancel"
 msgstr "_Annulla"
 
-#: src/ui/annotation-window.vala:337
+#: src/ui/annotation-window.vala:344
 msgid "_Discard"
 msgstr "_Scarta"
 
-#: src/ui/annotation-window.vala:1030
+#: src/ui/annotation-window.vala:1075
 msgid "This frame could not be read."
 msgstr "Impossibile leggere questo fotogramma."
 
-#: src/ui/annotation-window.vala:1035
+#: src/ui/annotation-window.vala:1080
 msgid "Image copied to the clipboard."
 msgstr "Immagine copiata negli appunti."
 
@@ -399,7 +398,7 @@ msgid "Items drawn on the recording are listed here."
 msgstr "Qui sono elencati gli elementi disegnati sulla registrazione."
 
 #. / Translators: %d is the number of a frame in a recording, from 1
-#: src/ui/recording-timeline.vala:279
+#: src/ui/recording-timeline.vala:283
 #, c-format
 msgid "Frame %d"
 msgstr "Fotogramma %d"
@@ -764,7 +763,7 @@ msgstr "Se catturare l'audio dal dispositivo di input PULSE predefinito"
 
 #: data/com.uploadedlobster.peek.gschema.xml:96
 msgid "Annotate recordings before saving"
-msgstr "Se annotare le registrazioni prima di salvarle"
+msgstr "Annota le registrazioni prima di salvarle"
 
 #: data/com.uploadedlobster.peek.gschema.xml:100
 msgid "Color of annotations drawn on image snapshots"

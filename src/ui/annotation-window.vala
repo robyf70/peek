@@ -17,6 +17,7 @@ namespace Peek.Ui {
   */
   [GtkTemplate (ui = "/com/uploadedlobster/peek/annotation-window.ui")]
   class AnnotationWindow : Gtk.Window {
+    // TOOLS is in the order of Tool
     internal struct ToolInfo {
       public Tool tool;
       public string icon_name;
@@ -35,7 +36,6 @@ namespace Peek.Ui {
       public int width;
     }
 
-    // In the order of Tool
     internal const ToolInfo[] TOOLS = {
       { Tool.RECTANGLE, "peek-rectangle-symbolic", N_ ("Rectangle"), "R",
         N_ ("Drag to draw a rectangle. Hold Shift for a square.") },
