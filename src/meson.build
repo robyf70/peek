@@ -28,6 +28,7 @@ peek_sources = [
   'recording/screen-recorder.vala',
   'recording/snapshot.vala',
   'ui/about-dialog.vala',
+  'ui/annotation-window.vala',
   'ui/application-window.vala',
   'ui/set-window-size-dialog.vala',
   'ui/error-dialog.vala',
@@ -79,6 +80,7 @@ endif
 
 if gtk.version().version_compare('>= 3.22')
   message('Compiling with features for GTK >= 3.22')
+  vala_args += ['-D', 'HAS_GDK_MONITOR']
   vala_args += ['-D', 'HAS_GTK_SHORTCUT_LABEL']
   vala_args += ['-D', 'HAS_GTK_SHOW_URI_ON_WINDOW']
 endif

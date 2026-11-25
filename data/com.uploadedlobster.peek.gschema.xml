@@ -91,6 +91,15 @@
       <default>false</default>
       <summary>Whether to capture sound from default PULSE input device</summary>
     </key>
+    <key name="annotation-color" type="s">
+      <default>'#e01b24'</default>
+      <summary>Color of annotations drawn on image snapshots</summary>
+    </key>
+    <key name="annotation-line-width" type="i">
+      <range min="2" max="7"/>
+      <default>4</default>
+      <summary>Line width of annotations drawn on image snapshots</summary>
+    </key>
     <key name="persist-window-geometry" type="(iiii)">
       <default>(-1,-1,500,300)</default>
       <summary>Size and position of the last open main window</summary>

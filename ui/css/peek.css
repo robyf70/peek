@@ -9,3 +9,16 @@
 .headerbar-hidden {
   border-radius: 0;
 }
+
+/* The entry shows the text as it will be drawn, size and color are set in code */
+.peek-annotation-entry {
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 1px dashed #77767b;
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+  font-family: sans;
+  font-weight: bold;
+}

@@ -3,10 +3,19 @@
   <gresource prefix="/com/uploadedlobster/peek">
     <!-- UI files -->
     <file preprocess="xml-stripblanks">application-window.ui</file>
+    <file preprocess="xml-stripblanks">annotation-window.ui</file>
     <file preprocess="xml-stripblanks">set-window-size-dialog.ui</file>
     <file preprocess="xml-stripblanks">error-dialog.ui</file>
     <file preprocess="xml-stripblanks">preferences.ui</file>
     <file preprocess="xml-stripblanks">about.ui</file>
+
+    <!-- Icons, GtkApplication adds this path to the icon theme -->
+    <file preprocess="xml-stripblanks">icons/peek-rectangle-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/peek-circle-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/peek-line-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/peek-arrow-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/peek-blur-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/peek-text-symbolic.svg</file>
 
     <!-- Stylesheets -->
     <file>css/peek.css</file>
