@@ -115,6 +115,9 @@ namespace Peek.Ui {
 
         if (!value) {
           canvas.grab_focus ();
+        } else if (recording != null) {
+          // A key held from saving must not activate the cancel button
+          set_focus (null);
         }
       }
     }
@@ -201,6 +204,10 @@ namespace Peek.Ui {
     private bool updating_color_buttons = false;
     private CssProvider entry_style = new CssProvider ();
     private bool _busy = false;
+
+    // The last key pressed in this window, 0 once it was released
+    private uint16 held_key = 0;
+
     private ToolInfo tool = TOOLS[0];
     private Gdk.RGBA color;
     private int line_width;
@@ -361,10 +368,26 @@ namespace Peek.Ui {
     }
 
     public override bool key_press_event (Gdk.EventKey event) {
-      return handle_key (event) || base.key_press_event (event);
+      var repeated = event.hardware_keycode == held_key;
+      held_key = event.hardware_keycode;
+      return handle_key (event, repeated) || base.key_press_event (event);
     }
 
-    private bool handle_key (Gdk.EventKey event) {
+    public override bool key_release_event (Gdk.EventKey event) {
+      if (event.hardware_keycode == held_key) {
+        held_key = 0;
+      }
+
+      return base.key_release_event (event);
+    }
+
+    public override bool focus_out_event (Gdk.EventFocus event) {
+      // The release might go to another window
+      held_key = 0;
+      return base.focus_out_event (event);
+    }
+
+    private bool handle_key (Gdk.EventKey event, bool repeated) {
       var mods = event.state & accelerator_get_default_mod_mask ();
       var plain = mods == 0;
       var ctrl = mods == Gdk.ModifierType.CONTROL_MASK;
@@ -376,8 +399,8 @@ namespace Peek.Ui {
           return true;
         }
 
-        // Arrow keys held for moving must not go on to the cancel button
-        return recording != null;
+        // Only what is needed to use the cancel button
+        return recording != null && !is_cancel_button_key (key, mods, repeated);
       }
 
       // Finish the drag before doing anything else
@@ -444,6 +467,11 @@ namespace Peek.Ui {
             return false;
           }
 
+          // Holding the key on the cancel button must not save again
+          if (recording != null && repeated) {
+            return true;
+          }
+
           save_requested ();
           return true;
         default:
@@ -458,6 +486,23 @@ namespace Peek.Ui {
       }
 
       return false;
+    }
+
+    private static bool is_cancel_button_key (uint key, Gdk.ModifierType mods, bool repeated) {
+      switch (key) {
+        case Gdk.Key.Tab:
+        case Gdk.Key.KP_Tab:
+        case Gdk.Key.ISO_Left_Tab:
+          return mods == 0 || mods == Gdk.ModifierType.SHIFT_MASK;
+        case Gdk.Key.space:
+        case Gdk.Key.KP_Space:
+        case Gdk.Key.Return:
+        case Gdk.Key.KP_Enter:
+        case Gdk.Key.ISO_Enter:
+          return mods == 0 && !repeated;
+        default:
+          return false;
+      }
     }
 
     private bool handle_timeline_key (uint key, Gdk.ModifierType mods) {
