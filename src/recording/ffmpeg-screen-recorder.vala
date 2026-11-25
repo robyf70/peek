@@ -23,6 +23,9 @@ namespace Peek.Recording {
 
         var args = new Array<string> ();
         args.append_val ("ffmpeg");
+        // The output is only read after errors. The progress would block ffmpeg
+        // after a few minutes.
+        args.append_val ("-nostats");
         Ffmpeg.add_vaapi_device (args, config);
         // args.append_val ("-loglevel");
         // args.append_val ("debug");
