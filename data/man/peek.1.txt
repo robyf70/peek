@@ -18,6 +18,13 @@ DESCRIPTION
   save it or copy it to the clipboard. Blurred text can sometimes be recovered,
   so do not rely on blur to hide real secrets.
 
+  With "Annotate recordings" turned on in the preferences (needs FFmpeg and
+  ffprobe), a recording opens in the same kind of window after you stop it.
+  Move to any frame with the slider, the frame buttons or the arrow keys (Shift
+  for one second) and draw on it. A timeline shows each item's range of frames,
+  which you can change by dragging its ends. There is no playback. WebM and MP4
+  are encoded a second time when they have items.
+
   Peek is not a general purpose screencast app with extended features but rather
   focuses on the single task of creating small, silent screencasts of an area of
   the screen for creating GIF animations or silent WebM or MP4 videos.

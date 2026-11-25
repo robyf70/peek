@@ -3,10 +3,13 @@
 - feat: Add sound capture settings
 - feat: Take a snapshot of the area as GIF, PNG, JPEG or BMP
 - feat: Annotate snapshots, then save them or copy them to the clipboard
+- feat: Annotate recordings on a timeline before saving
 - feat: Removed issue submission from error dialog
-- feat: Removed MP4 recording option due to maintenance and performance issues
+- feat: MP4 recording with H.264, HEVC or AV1, optionally using VAAPI
 - fix: Fix desktop integration for GNOME Flashback (#1202)
 - fix: Fix format selection popover updating on format change
+- fix: Stopping a recording of several minutes could hang
+- fix: Recordings cancelled within a second left a temporary file behind
 - i18n: New translations for Hungarian, Malayalam, Portuguese and Slovak
 - i18n: Updated translations for Basque, Chinese (Traditional), Croatian,
   Czech, Dutch, Esperanto, Finnish, French, German, Hebrew, Indonesian, Italian,

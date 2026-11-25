@@ -321,6 +321,27 @@ discards it. The clipboard only outlives Peek if a clipboard manager is running.
 Blurred text can sometimes be recovered from the image, so cover real secrets
 such as passwords with something else, or do not capture them.
 
+### Can I annotate a recording?
+Yes, turn on *Annotate recordings* in the preferences (off by default; it needs
+FFmpeg and ffprobe, otherwise the option is greyed out). After you stop, a
+window opens with the first frame and a timeline below it. Use the same six
+tools as for snapshots on any frame of the recording. Move with the slider, the
+previous and next frame buttons or the Left and Right keys (Shift moves one
+second, Home and End go to the first and last frame). There is no playback.
+
+Each item is listed on the timeline with a bar showing the frames it is visible
+on. A new item starts at the current frame and lasts 3 seconds, a new blur
+covers the whole recording. Drag either end of a bar, or select the item and
+use *Start here* and *End here*, to change its range. Delete removes the
+selected item. Items stay where you drew them, they do not follow moving
+content. *Save* burns the items into the recording and then opens the save
+dialog. Esc and Cancel ask whether to discard the recording.
+
+Recordings without items are saved as they are. For WebM and MP4 with items the
+video is encoded a second time, which loses some quality. GIFs from the GNOME
+Shell recorder have a variable frame rate that is resampled when converting, so
+a very short item can shift or disappear there.
+
 ### What about WebM or MP4? Those are well supported on the web.
 Peek allows you to record in WebM format, just choose your preferred output
 format in the preferences. WebM is well supported by modern browsers, even
