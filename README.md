@@ -46,6 +46,7 @@ Simple screen recorder with an easy to use interface
   - [Why are the GIF files so big?](#why-are-the-gif-files-so-big)
   - [If GIF is so bad why use it at all?](#if-gif-is-so-bad-why-use-it-at-all)
   - [Can I take a still image instead of a recording?](#can-i-take-a-still-image-instead-of-a-recording)
+  - [Can I annotate a recording?](#can-i-annotate-a-recording)
   - [What about WebM or MP4? Those are well supported on the web.](#what-about-webm-or-mp4-those-are-well-supported-on-the-web)
   - [How do I get H.264, H.265/HEVC and AV1 working?](#how-do-i-get-h264-h265hevc-and-av1-working)
   - [What is the cause for "Could not start GNOME Shell recorder" errors?](#what-is-the-cause-for-could-not-start-gnome-shell-recorder-errors)
@@ -204,7 +205,7 @@ Prebuilt RPMs are attached to the
 [releases of this fork](https://github.com/robyf70/peek/releases). The
 package is built with all features enabled (global keyboard shortcut, native
 file chooser, GNOME Shell recorder, open file manager) and restores MP4
-output. Its release number is higher than Fedora's own `peek` package, so it
+output. Its version is higher than Fedora's own `peek` package, so it
 replaces it and is not downgraded by `dnf update`.
 
     sudo dnf install https://github.com/robyf70/peek/releases/download/v1.6.0-1/peek-1.6.0-1.fc44.x86_64.rpm
@@ -335,12 +336,13 @@ covers the whole recording. Drag either end of a bar, or select the item and
 use *Start here* and *End here*, to change its range. Delete removes the
 selected item. Items stay where you drew them, they do not follow moving
 content. *Save* burns the items into the recording and then opens the save
-dialog. Esc and Cancel ask whether to discard the recording.
+dialog. Esc and Cancel ask whether to discard the recording. While a save is
+running they stop it and return to the drawing.
 
-Recordings without items are saved as they are. For WebM and MP4 with items the
-video is encoded a second time, which loses some quality. GIFs from the GNOME
-Shell recorder have a variable frame rate that is resampled when converting, so
-a very short item can shift or disappear there.
+Recordings without items are saved as without annotating. For WebM and MP4 with
+items the video is encoded a second time, which loses some quality. Recordings
+of the GNOME Shell recorder have a variable frame rate that is resampled when
+converting to GIF or APNG, so a very short item can shift or disappear there.
 
 ### What about WebM or MP4? Those are well supported on the web.
 Peek allows you to record in WebM format, just choose your preferred output

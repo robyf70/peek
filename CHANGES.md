@@ -8,7 +8,7 @@
 - feat: MP4 recording with H.264, HEVC or AV1, optionally using VAAPI
 - fix: Fix desktop integration for GNOME Flashback (#1202)
 - fix: Fix format selection popover updating on format change
-- fix: Stopping a recording of several minutes could hang
+- fix: Stopping or converting a recording of several minutes could hang
 - fix: Recordings cancelled within a second left a temporary file behind
 - i18n: New translations for Hungarian, Malayalam, Portuguese and Slovak
 - i18n: Updated translations for Basque, Chinese (Traditional), Croatian,

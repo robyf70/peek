@@ -23,7 +23,9 @@ DESCRIPTION
   Move to any frame with the slider, the frame buttons or the arrow keys (Shift
   for one second) and draw on it. A timeline shows each item's range of frames,
   which you can change by dragging its ends. There is no playback. WebM and MP4
-  are encoded a second time when they have items.
+  are encoded a second time when they have items. Items do not follow moving
+  content; on GIFs and APNGs from the GNOME Shell recorder a very short item can
+  shift or disappear.
 
   Peek is not a general purpose screencast app with extended features but rather
   focuses on the single task of creating small, silent screencasts of an area of
