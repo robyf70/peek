@@ -48,7 +48,8 @@ namespace Peek.Recording {
     public abstract void cancel ();
 
     /**
-    * Runs the post processing deferred by defer_post_processing.
+    * Runs the post processing deferred by defer_post_processing. Takes over the
+    * file, which is either deleted or the one passed to recording_finished.
     */
     public abstract void post_process (File file);
   }

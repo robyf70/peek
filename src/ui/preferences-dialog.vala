@@ -95,6 +95,8 @@ namespace Peek.Ui {
     [GtkChild]
     private unowned Gtk.CheckButton recording_capture_sound;
 
+    [GtkChild]
+    private unowned Gtk.CheckButton annotation_recordings;
 
     public PreferencesDialog () {
       Object ();
@@ -159,6 +161,13 @@ namespace Peek.Ui {
         recording_capture_sound, "active",
         SettingsBindFlags.DEFAULT);
 
+      settings.bind ("annotation-recordings",
+        annotation_recordings, "active",
+        SettingsBindFlags.DEFAULT);
+
+      if (!RecordingReader.is_available ()) {
+        annotation_recordings.sensitive = false;
+      }
 
       on_output_format_changed ();
       on_interface_open_file_manager_toggled (interface_open_file_manager);

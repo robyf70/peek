@@ -190,8 +190,14 @@ namespace Peek.Recording {
       files.append_val (captured);
 
       active_post_processor = pipeline;
-      files = yield pipeline.process_async (files);
-      active_post_processor = null;
+      try {
+        files = yield pipeline.process_async (files);
+      } finally {
+        // Might already be that of the next recording
+        if (active_post_processor == pipeline) {
+          active_post_processor = null;
+        }
+      }
 
       // Might already be that of the next recording
       if (temp_file == captured.get_path ()) {

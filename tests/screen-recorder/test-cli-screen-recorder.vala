@@ -194,6 +194,29 @@ void test_post_process_failure_after_cancel () {
   assert (recorder.aborted == 1);
 }
 
+void test_cancel_after_post_process_failure () {
+  if (!Utils.check_for_executable ("ffmpeg")) {
+    Test.skip ("ffmpeg is missing");
+    return;
+  }
+
+  // The recorded file is empty
+  var recorder = new TestCapturingRecorder ();
+  recorder.config.output_format = OutputFormat.APNG;
+  recorder.start ();
+  recorder.finish ();
+  run_main_loop (1500);
+  assert (recorder.aborted == 1);
+
+  recorder.cancel ();
+  assert (recorder.aborted == 1);
+
+  recorder.start ();
+  assert (recorder.aborted == 1);
+  recorder.cancel ();
+  assert (recorder.aborted == 2);
+}
+
 void test_deferred_process_exits_itself () {
   var recorder = new TestCapturingRecorder ();
   recorder.command = "true";
@@ -341,6 +364,10 @@ void main (string[] args) {
   Test.add_func (
     "/screen-recorder/cli-screen-recorder/test_post_process_failure_after_cancel",
     test_post_process_failure_after_cancel);
+
+  Test.add_func (
+    "/screen-recorder/cli-screen-recorder/test_cancel_after_post_process_failure",
+    test_cancel_after_post_process_failure);
 
   Test.add_func (
     "/screen-recorder/cli-screen-recorder/test_deferred_process_exits_itself",

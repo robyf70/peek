@@ -91,6 +91,10 @@
       <default>false</default>
       <summary>Whether to capture sound from default PULSE input device</summary>
     </key>
+    <key name="annotation-recordings" type="b">
+      <default>false</default>
+      <summary>Annotate recordings before saving</summary>
+    </key>
     <key name="annotation-color" type="s">
       <default>'#e01b24'</default>
       <summary>Color of annotations drawn on image snapshots</summary>
