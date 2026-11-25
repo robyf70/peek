@@ -9,13 +9,13 @@ Gdk.Pixbuf create_gray () {
   return pixbuf;
 }
 
-// Vertical stripes, 2 px black, 2 px white
-Gdk.Pixbuf create_stripes () {
+// Vertical stripes, alternating black and white
+Gdk.Pixbuf create_stripes (int stripe_width = 2) {
   var pixbuf = create_gray ();
   unowned uint8[] pixels = pixbuf.get_pixels_with_length ();
   for (int y = 0; y < pixbuf.height; y++) {
     for (int x = 0; x < pixbuf.width * 3; x++) {
-      pixels[y * pixbuf.rowstride + x] = x / 6 % 2 == 0 ? 0 : 255;
+      pixels[y * pixbuf.rowstride + x] = x / (3 * stripe_width) % 2 == 0 ? 0 : 255;
     }
   }
 
@@ -229,6 +229,20 @@ void test_blur_order () {
   image.add (create (Tool.BLUR, 10, 10, 110, 90));
   image.add (create (Tool.BLUR, 60, 10, 180, 90));
   assert_blurred (image.render (), 68, 18, 102, 82);
+
+  // A blur is computed from the captured pixels, not from other blurs
+  image = new AnnotatedImage (create_stripes (24), 1);
+  image.add (create (Tool.BLUR, 60, 10, 180, 90));
+  var single = image.render ();
+  image = new AnnotatedImage (create_stripes (24), 1);
+  image.add (create (Tool.BLUR, 10, 10, 110, 90));
+  image.add (create (Tool.BLUR, 60, 10, 180, 90));
+  var overlapping = image.render ();
+  for (int y = 10; y < 90; y++) {
+    for (int x = 60; x < 180; x++) {
+      assert (get_pixel (overlapping, x, y) == get_pixel (single, x, y));
+    }
+  }
 }
 
 void test_preview () {
@@ -301,6 +315,48 @@ void test_scaled () {
   assert (get_pixel (result, 80, 52) == GRAY);
 }
 
+// Position of the rightmost and the lowest drawn pixel
+void get_extent (Annotation annotation, int scale, out int right, out int bottom) {
+  var image = new AnnotatedImage (create_gray (), scale);
+  image.add (annotation);
+  var result = image.render ();
+  right = bottom = 0;
+  for (int y = 0; y < result.height; y++) {
+    for (int x = 0; x < result.width; x++) {
+      if (get_pixel (result, x, y) != GRAY) {
+        right = int.max (right, x);
+        bottom = int.max (bottom, y);
+      }
+    }
+  }
+}
+
+void test_scaled_arrow () {
+  int right, bottom, scaled_right, scaled_bottom;
+  get_extent (create (Tool.ARROW, 20, 50, 150, 50), 1, out right, out bottom);
+  get_extent (create (Tool.ARROW, 20, 50, 150, 50), 2, out scaled_right, out scaled_bottom);
+  assert (scaled_bottom - 50 > 1.5 * (bottom - 50));
+}
+
+void test_scaled_text () {
+  var annotation = create (Tool.TEXT, 0, 0, 0, 0, 2);
+  annotation.text = "Hello";
+  int right, bottom, scaled_right, scaled_bottom;
+  get_extent (annotation, 1, out right, out bottom);
+  get_extent (annotation, 2, out scaled_right, out scaled_bottom);
+  assert (scaled_right > 1.5 * right);
+}
+
+void test_scaled_blur () {
+  var image = new AnnotatedImage (create_stripes (24), 2);
+  image.add (create (Tool.BLUR, 0, 0, 200, 100));
+  var result = image.render ();
+  for (int x = 32; x < 168; x++) {
+    var red = get_pixel (result, x, 50) >> 16;
+    assert (red >= 64 && red <= 192);
+  }
+}
+
 void test_fit_scale () {
   assert (fit_scale (1000, 500, 500, 500, 1) == 0.5);
   assert (fit_scale (500, 1000, 500, 500, 1) == 0.5);
@@ -324,6 +380,9 @@ void main (string[] args) {
   Test.add_func ("/annotated-image/blur_alpha", test_blur_alpha);
   Test.add_func ("/annotated-image/preview", test_preview);
   Test.add_func ("/annotated-image/scaled", test_scaled);
+  Test.add_func ("/annotated-image/scaled_arrow", test_scaled_arrow);
+  Test.add_func ("/annotated-image/scaled_text", test_scaled_text);
+  Test.add_func ("/annotated-image/scaled_blur", test_scaled_blur);
   Test.add_func ("/annotated-image/fit_scale", test_fit_scale);
 
   Test.run ();
