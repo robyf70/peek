@@ -262,6 +262,10 @@ namespace Peek.Ui {
         selected_id = 0;
       }
 
+      if (recording.find (drag_id) == null) {
+        drag_id = 0;
+      }
+
       update_rows ();
       update_position ();
     }
@@ -456,7 +460,10 @@ namespace Peek.Ui {
       recording.change_range (drag_id, drag_start, drag_start ? edge : edge - 1);
 
       var item = recording.find (drag_id);
-      move_to (drag_start ? item.first_frame : item.last_frame);
+      if (item != null) {
+        move_to (drag_start ? item.first_frame : item.last_frame);
+      }
+
       return true;
     }
 
