@@ -94,4 +94,18 @@ if get_option('build-tests')
     ],
   )
   test('Testing annotated-recording', test_annotated_recording)
+
+  # /recording-reader/
+  test_recording_reader = executable('test-recording-reader',
+    'test-recording-reader.vala',
+    join_paths(meson.source_root(), 'src/defaults.vala'),
+    join_paths(meson.source_root(), 'src/errordomain.vala'),
+    join_paths(meson.source_root(), 'src/utils.vala'),
+    join_paths(meson.source_root(), 'src/recording/recording-reader.vala'),
+    dependencies: [
+      dependency('gtk+-3.0'),
+      meson.get_compiler('c').find_library('m', required: false),
+    ],
+  )
+  test('Testing recording-reader', test_recording_reader)
 endif

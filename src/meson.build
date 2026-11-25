@@ -25,6 +25,7 @@ peek_sources = [
   'recording/gnome-shell-dbus-recorder.vala',
   'recording/recording-area.vala',
   'recording/recording-config.vala',
+  'recording/recording-reader.vala',
   'recording/screen-recorder-factory.vala',
   'recording/screen-recorder.vala',
   'recording/snapshot.vala',
