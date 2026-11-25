@@ -82,4 +82,16 @@ if get_option('build-tests')
     ],
   )
   test('Testing annotated-image', test_annotated_image)
+
+  # /annotated-recording/
+  test_annotated_recording = executable('test-annotated-recording',
+    'test-annotated-recording.vala',
+    join_paths(meson.source_root(), 'src/annotation/annotated-image.vala'),
+    join_paths(meson.source_root(), 'src/annotation/annotated-recording.vala'),
+    dependencies: [
+      dependency('gtk+-3.0'),
+      meson.get_compiler('c').find_library('m', required: false),
+    ],
+  )
+  test('Testing annotated-recording', test_annotated_recording)
 endif

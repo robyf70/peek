@@ -7,6 +7,7 @@ peek_sources = [
   'gtk-helper.vala',
   'utils.vala',
   'annotation/annotated-image.vala',
+  'annotation/annotated-recording.vala',
   'dbus/freedesktop-dbus.vala',
   'dbus/freedesktop-filemanager.vala',
   'dbus/gnome-shell-screencast.vala',
