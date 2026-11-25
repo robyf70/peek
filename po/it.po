@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Peek\n"
 "Report-Msgid-Bugs-To: ph.wolfer@gmail.com\n"
-"POT-Creation-Date: 2026-11-25 11:54+0100\n"
+"POT-Creation-Date: 2026-11-25 19:01+0100\n"
 "PO-Revision-Date: 2024-06-14 18:09+0000\n"
 "Last-Translator: albanobattistella <albano_battistella@hotmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/peek/translations/it/>\n"
@@ -54,25 +54,25 @@ msgstr "Avvia Peek senza la barra dell'intestazione"
 msgid "Peek"
 msgstr "Peek"
 
-#: src/application.vala:252
+#: src/application.vala:258
 #, c-format
 msgid "Unable to initialize default recording backend: %s"
 msgstr "Impossibile inizializzare il backend di registrazione predefinito: %s"
 
-#: src/application.vala:268
+#: src/application.vala:274
 #, c-format
 msgid "Unable to initialize recording backend %s: %s"
 msgstr "Impossibile inizializzare il backend di registrazione %s: %s"
 
-#: src/application.vala:339
+#: src/application.vala:345
 msgid "Recording backend unavailable"
 msgstr "Registrazione backend non disponibile"
 
-#: src/application.vala:343
+#: src/application.vala:349
 msgid "Native Wayland backend is unsupported"
 msgstr "Il backend nativo di Wayland non é supportato"
 
-#: src/application.vala:344
+#: src/application.vala:350
 msgid ""
 "You are running Peek natively on Wayland, this is currently unsupported. Please start Peek using XWayland by setting <tt>GDK_BACKEND=x11</tt>.\n"
 "\n"
@@ -90,260 +90,319 @@ msgstr "Peek richiede FFmpeg o l'esecuzione da una sessione di shell GNOME."
 msgid "FFmpeg executable not found."
 msgstr "Eseguibile FFmpeg non trovato."
 
-#: src/ui/annotation-window.vala:38
+#. In the order of Tool
+#: src/ui/annotation-window.vala:40
 msgid "Rectangle"
 msgstr "Rettangolo"
 
-#: src/ui/annotation-window.vala:39
+#: src/ui/annotation-window.vala:41
 msgid "Drag to draw a rectangle. Hold Shift for a square."
 msgstr ""
 "Trascina per disegnare un rettangolo. Tieni premuto Maiusc per un quadrato."
 
-#: src/ui/annotation-window.vala:40
+#: src/ui/annotation-window.vala:42
 msgid "Circle"
 msgstr "Cerchio"
 
-#: src/ui/annotation-window.vala:41
+#: src/ui/annotation-window.vala:43
 msgid "Drag to draw an ellipse. Hold Shift for a circle."
 msgstr ""
 "Trascina per disegnare un'ellisse. Tieni premuto Maiusc per un cerchio."
 
-#: src/ui/annotation-window.vala:42
+#: src/ui/annotation-window.vala:44
 msgid "Line"
 msgstr "Linea"
 
-#: src/ui/annotation-window.vala:43
+#: src/ui/annotation-window.vala:45
 msgid "Drag to draw a line. Hold Shift to snap to 45°."
 msgstr ""
 "Trascina per disegnare una linea. Tieni premuto Maiusc per bloccarla a "
 "multipli di 45°."
 
-#: src/ui/annotation-window.vala:44
+#: src/ui/annotation-window.vala:46
 msgid "Arrow"
 msgstr "Freccia"
 
-#: src/ui/annotation-window.vala:45
+#: src/ui/annotation-window.vala:47
 msgid "Drag from tail to tip. Hold Shift to snap to 45°."
 msgstr ""
 "Trascina dalla coda alla punta. Tieni premuto Maiusc per bloccarla a "
 "multipli di 45°."
 
-#: src/ui/annotation-window.vala:46
+#: src/ui/annotation-window.vala:48
 msgid "Blur area"
 msgstr "Sfoca area"
 
-#: src/ui/annotation-window.vala:47
+#: src/ui/annotation-window.vala:49
 msgid "Drag over the area to blur. Color and width do not apply."
 msgstr "Trascina sull'area da sfocare. Colore e spessore non si applicano."
 
-#: src/ui/annotation-window.vala:48
+#: src/ui/annotation-window.vala:50
 msgid "Text"
 msgstr "Testo"
 
-#: src/ui/annotation-window.vala:49
+#: src/ui/annotation-window.vala:51
 msgid "Click to place text. Enter confirms, Esc discards."
 msgstr "Fai clic per inserire il testo. Invio conferma, Esc annulla."
 
-#: src/ui/annotation-window.vala:55
+#: src/ui/annotation-window.vala:57
 msgid "Red"
 msgstr "Rosso"
 
-#: src/ui/annotation-window.vala:56
+#: src/ui/annotation-window.vala:58
 msgid "Yellow"
 msgstr "Giallo"
 
-#: src/ui/annotation-window.vala:57
+#: src/ui/annotation-window.vala:59
 msgid "Green"
 msgstr "Verde"
 
-#: src/ui/annotation-window.vala:58
+#: src/ui/annotation-window.vala:60
 msgid "Blue"
 msgstr "Blu"
 
-#: src/ui/annotation-window.vala:59
+#: src/ui/annotation-window.vala:61
 msgid "Black"
 msgstr "Nero"
 
-#: src/ui/annotation-window.vala:60
+#: src/ui/annotation-window.vala:62
 msgid "White"
 msgstr "Bianco"
 
-#: src/ui/annotation-window.vala:64
+#: src/ui/annotation-window.vala:66
 msgid "Thin"
 msgstr "Sottile"
 
-#: src/ui/annotation-window.vala:65
+#: src/ui/annotation-window.vala:67
 msgid "Medium"
 msgstr "Medio"
 
-#: src/ui/annotation-window.vala:66
+#: src/ui/annotation-window.vala:68
 msgid "Thick"
 msgstr "Spesso"
 
+#: src/ui/annotation-window.vala:237
+msgid "Annotate recording"
+msgstr "Annota registrazione"
+
+#: src/ui/annotation-window.vala:238
+msgid "Save the recording (Ctrl+S)"
+msgstr "Salva la registrazione (Ctrl+S)"
+
 #. Questions asked by this window must not block other Peek windows
 #. / Translators: %s is the name of an image format, e.g. PNG
-#: src/ui/annotation-window.vala:211
+#: src/ui/annotation-window.vala:261
 #, c-format
 msgid "Save as %s…"
 msgstr "Salva come %s…"
 
-#: src/ui/annotation-window.vala:266
+#: src/ui/annotation-window.vala:334
+msgid "Discard recording?"
+msgstr "Scartare la registrazione?"
+
+#: src/ui/annotation-window.vala:334
 msgid "Discard annotations?"
 msgstr "Scartare le annotazioni?"
 
-#: src/ui/annotation-window.vala:267 src/ui/application-window.vala:1043
-#: src/ui/application-window.vala:1048
+#: src/ui/annotation-window.vala:336
+msgid "_Keep"
+msgstr "_Mantieni"
+
+#: src/ui/annotation-window.vala:336 src/ui/application-window.vala:1224
+#: src/ui/application-window.vala:1229
 msgid "_Cancel"
 msgstr "_Annulla"
 
-#: src/ui/annotation-window.vala:268
+#: src/ui/annotation-window.vala:337
 msgid "_Discard"
 msgstr "_Scarta"
 
-#: src/ui/annotation-window.vala:832
+#: src/ui/annotation-window.vala:1030
+msgid "This frame could not be read."
+msgstr "Impossibile leggere questo fotogramma."
+
+#: src/ui/annotation-window.vala:1035
 msgid "Image copied to the clipboard."
 msgstr "Immagine copiata negli appunti."
 
-#: src/ui/application-window.vala:167
+#: src/ui/application-window.vala:183
 msgid "An unexpected error occurred during recording. Recording was aborted."
 msgstr ""
 "Un errore imprevisto si è verificato durante la registrazione. La "
 "registrazione è stata annullata."
 
-#: src/ui/application-window.vala:329
+#: src/ui/application-window.vala:376
 msgid "Rendering animation…"
 msgstr "Renderizzando l'animazione…"
 
-#: src/ui/application-window.vala:330
+#: src/ui/application-window.vala:377
 msgid "Peek will close when rendering is finished."
 msgstr "Peek si chiuderà alla fine del rendering."
 
-#: src/ui/application-window.vala:366 ui/application-window.ui:369
+#: src/ui/application-window.vala:387 ui/application-window.ui:369
 #: ui/preferences.ui:224
 msgid "APNG"
 msgstr "APNG"
 
-#: src/ui/application-window.vala:367 src/ui/application-window.vala:370
+#: src/ui/application-window.vala:388 src/ui/application-window.vala:391
 #: ui/application-window.ui:353 ui/application-window.ui:437
 #: ui/preferences.ui:223
 msgid "GIF"
 msgstr "GIF"
 
-#: src/ui/application-window.vala:368 ui/application-window.ui:403
+#: src/ui/application-window.vala:389 ui/application-window.ui:403
 #: ui/preferences.ui:226
 msgid "MP4"
 msgstr "MP4"
 
-#: src/ui/application-window.vala:369 ui/application-window.ui:386
+#: src/ui/application-window.vala:390 ui/application-window.ui:386
 #: ui/preferences.ui:225
 msgid "WebM"
 msgstr "WebM"
 
-#: src/ui/application-window.vala:371 ui/application-window.ui:454
+#: src/ui/application-window.vala:392 ui/application-window.ui:454
 #: ui/preferences.ui:228
 msgid "PNG"
 msgstr "PNG"
 
-#: src/ui/application-window.vala:372 ui/application-window.ui:471
+#: src/ui/application-window.vala:393 ui/application-window.ui:471
 #: ui/preferences.ui:229
 msgid "JPEG"
 msgstr "JPEG"
 
-#: src/ui/application-window.vala:373 ui/application-window.ui:488
+#: src/ui/application-window.vala:394 ui/application-window.ui:488
 #: ui/preferences.ui:230
 msgid "BMP"
 msgstr "BMP"
 
-#: src/ui/application-window.vala:398
+#: src/ui/application-window.vala:419
 #, c-format
 msgid "Snapshot as %s"
 msgstr "Istantanea come %s"
 
-#: src/ui/application-window.vala:400 ui/application-window.ui:420
+#: src/ui/application-window.vala:421 ui/application-window.ui:420
 msgid "Take snapshot"
 msgstr "Cattura istantanea"
 
-#: src/ui/application-window.vala:402
+#: src/ui/application-window.vala:423
 #, c-format
 msgid "Record as %s"
 msgstr "Registra come %s"
 
-#: src/ui/application-window.vala:404 ui/application-window.ui:33
+#: src/ui/application-window.vala:425 ui/application-window.ui:33
 #: ui/application-window.ui:185
 msgid "Start recording"
 msgstr "Inizia registrazione"
 
-#: src/ui/application-window.vala:546
+#: src/ui/application-window.vala:567
 #, c-format
 msgid "Start / Stop: %s"
 msgstr "Avvia / Ferma: %s"
 
-#: src/ui/application-window.vala:713
+#: src/ui/application-window.vala:739
 msgid "Rendering…"
 msgstr "Renderizzando…"
 
-#: src/ui/application-window.vala:758
+#: src/ui/application-window.vala:792
 msgid "Recording could not be started due to an unexpected error."
 msgstr ""
 "La registrazione non si è potuta avviare a causa di un errore imprevisto."
 
-#: src/ui/application-window.vala:799
+#: src/ui/application-window.vala:833
 msgid "The snapshot could not be taken."
 msgstr "Impossibile catturare l'istantanea."
 
-#: src/ui/application-window.vala:843
+#: src/ui/application-window.vala:892
+msgid "The recording could not be opened for annotating."
+msgstr "Impossibile aprire la registrazione per annotarla."
+
+#: src/ui/application-window.vala:982
+msgid "The recording could not be created."
+msgstr "Impossibile creare la registrazione."
+
+#: src/ui/application-window.vala:983
 msgid "The image could not be created."
 msgstr "Impossibile creare l'immagine."
 
-#: src/ui/application-window.vala:1033
+#: src/ui/application-window.vala:1214
 msgid "Save image"
 msgstr "Salva immagine"
 
-#: src/ui/application-window.vala:1033
+#: src/ui/application-window.vala:1214
 msgid "Save animation"
 msgstr "Salva animazione"
 
-#: src/ui/application-window.vala:1042 src/ui/application-window.vala:1050
+#: src/ui/application-window.vala:1223 src/ui/application-window.vala:1231
 msgid "_Save"
 msgstr "_Salva"
 
-#: src/ui/application-window.vala:1137
+#: src/ui/application-window.vala:1326
 msgid "The file could not be saved to the selected location."
 msgstr "Non è stato possibile salvare il file nella posizione selezionata."
 
-#: src/ui/application-window.vala:1166
+#: src/ui/application-window.vala:1355
 #, c-format
 msgid "Image saved as “%s”"
 msgstr "Immagine salvata come “%s”"
 
-#: src/ui/application-window.vala:1168
+#: src/ui/application-window.vala:1357
 #, c-format
 msgid "Animation saved as “%s”"
 msgstr "Animazione salvata come \"%s\""
 
 #. Unity does not allow actions on notifications, so we disable
 #. notification actions there.
-#: src/ui/application-window.vala:1179
+#: src/ui/application-window.vala:1368
 msgid "Click here to show the saved file in your file manager."
 msgstr "Premi qui per vedere il file salvato nel tuo file manager."
 
-#: src/ui/application-window.vala:1181
+#: src/ui/application-window.vala:1370
 msgid "Show in file manager"
 msgstr "Mostra nel file manager"
 
 #. Display the configured shortcut to the user
-#: src/ui/preferences-dialog.vala:242
+#: src/ui/preferences-dialog.vala:251
 msgid "deactivated"
 msgstr "disattivato"
 
 #. Add a button to change the keyboard shortcut
-#: src/ui/preferences-dialog.vala:253 src/ui/preferences-dialog.vala:269
+#: src/ui/preferences-dialog.vala:262 src/ui/preferences-dialog.vala:278
 msgid "Change"
 msgstr "Cambia"
 
-#: src/ui/preferences-dialog.vala:266
+#: src/ui/preferences-dialog.vala:275
 msgid "Press keys…"
 msgstr "Premi i tasti…"
+
+#: src/ui/recording-timeline.vala:125
+msgid "Previous frame"
+msgstr "Fotogramma precedente"
+
+#: src/ui/recording-timeline.vala:126
+msgid "Next frame"
+msgstr "Fotogramma successivo"
+
+#: src/ui/recording-timeline.vala:135
+msgid "Position"
+msgstr "Posizione"
+
+#: src/ui/recording-timeline.vala:149
+msgid "Start here"
+msgstr "Inizia qui"
+
+#: src/ui/recording-timeline.vala:150
+msgid "End here"
+msgstr "Termina qui"
+
+#: src/ui/recording-timeline.vala:176
+msgid "Items drawn on the recording are listed here."
+msgstr "Qui sono elencati gli elementi disegnati sulla registrazione."
+
+#. / Translators: %d is the number of a frame in a recording, from 1
+#: src/ui/recording-timeline.vala:279
+#, c-format
+msgid "Frame %d"
+msgstr "Fotogramma %d"
 
 #: ui/about.ui.in:37 data/com.uploadedlobster.peek.desktop.in:4
 msgid "Animated GIF recorder"
@@ -538,7 +597,11 @@ msgstr "Cattura il cursore"
 msgid "Capture sound from default PULSE device"
 msgstr "Cattura l'audio dal dispositivo PULSE predefinito"
 
-#: ui/preferences.ui:552
+#: ui/preferences.ui:536
+msgid "Annotate recordings"
+msgstr "Annota le registrazioni"
+
+#: ui/preferences.ui:567
 msgid "Peek preferences"
 msgstr "Preferenze Peek"
 
@@ -700,18 +763,22 @@ msgid "Whether to capture sound from default PULSE input device"
 msgstr "Se catturare l'audio dal dispositivo di input PULSE predefinito"
 
 #: data/com.uploadedlobster.peek.gschema.xml:96
+msgid "Annotate recordings before saving"
+msgstr "Se annotare le registrazioni prima di salvarle"
+
+#: data/com.uploadedlobster.peek.gschema.xml:100
 msgid "Color of annotations drawn on image snapshots"
 msgstr "Colore delle annotazioni disegnate sulle istantanee"
 
-#: data/com.uploadedlobster.peek.gschema.xml:101
+#: data/com.uploadedlobster.peek.gschema.xml:105
 msgid "Line width of annotations drawn on image snapshots"
 msgstr "Spessore delle linee delle annotazioni disegnate sulle istantanee"
 
-#: data/com.uploadedlobster.peek.gschema.xml:105
+#: data/com.uploadedlobster.peek.gschema.xml:109
 msgid "Size and position of the last open main window"
 msgstr "Dimesione e posizione dell'ultima finestra principale aperta"
 
-#: data/com.uploadedlobster.peek.gschema.xml:109
+#: data/com.uploadedlobster.peek.gschema.xml:113
 msgid "Path where last video got saved"
 msgstr "Percorso dove l'ultimo video è stato salvato"
 
