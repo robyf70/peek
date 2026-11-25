@@ -170,6 +170,9 @@ namespace Peek.Ui {
     [GtkChild]
     private unowned Label size_label;
 
+    // All windows share the clipboard
+    private static bool storing_clipboard = false;
+
     private GLib.Settings settings;
     private AnnotatedImage image;
     private int capture_scale;
@@ -807,9 +810,16 @@ namespace Peek.Ui {
       var clipboard = Clipboard.get_for_display (get_display (), Gdk.SELECTION_CLIPBOARD);
       clipboard.set_image (render ());
       clipboard.set_can_store (null);
-      clipboard.store ();
       image.mark_copied ();
       show_copied_message ();
+
+      // Runs a main loop, in which the window might change or get destroyed, so
+      // this must come last and not use the window.
+      if (!storing_clipboard) {
+        storing_clipboard = true;
+        clipboard.store ();
+        storing_clipboard = false;
+      }
     }
 
     private void show_hint () {
