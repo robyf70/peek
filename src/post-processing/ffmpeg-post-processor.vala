@@ -58,7 +58,7 @@ namespace Peek.PostProcessing {
         var palette_file = Utils.create_temp_file ("png");
 
         string[] args = {
-          "ffmpeg", "-y",
+          "ffmpeg", "-nostats", "-y",
           "-i", file.get_path (),
           "-vf", "fps=%d,palettegen".printf (config.framerate),
           palette_file
@@ -86,6 +86,7 @@ namespace Peek.PostProcessing {
         var argv = new Array<string> ();
 
         argv.append_val ("ffmpeg");
+        argv.append_val ("-nostats");
         argv.append_val ("-y");
 
         argv.append_val ("-i");

@@ -103,10 +103,11 @@ namespace Peek {
       return -1;
     }
 
-    public static string get_command_failed_message (string[] argv, Subprocess? subprocess = null) {
+    public static string get_command_failed_message (
+      string[] argv, Subprocess? subprocess = null, string? read_output = null) {
       int status = -1;
       int term_sig = 0;
-      string? output = null;
+      string? output = read_output;
 
       if (subprocess != null) {
         status = subprocess.get_status ();
@@ -115,7 +116,7 @@ namespace Peek {
         }
 
         var stdout_pipe = subprocess.get_stdout_pipe ();
-        if (stdout_pipe != null) {
+        if (output == null && stdout_pipe != null) {
           output = read_instream_as_utf8 (stdout_pipe);
         }
       }

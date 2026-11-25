@@ -19,7 +19,7 @@ namespace Peek.PostProcessing {
     public override async Array<File>? process_async (Array<File> files) throws RecordingError {
       var input_file = files.index (0);
       string[] args = {
-        find_executable (), "-y",
+        find_executable (), "-nostats", "-y",
         "-i", input_file.get_path (),
         get_png_filename_pattern (input_file, "%04d")
       };

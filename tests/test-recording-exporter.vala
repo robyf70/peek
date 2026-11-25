@@ -1027,10 +1027,7 @@ void check_case (Case c, Ending ending) {
   Source.remove (timeout);
   assert (timer.elapsed () < 15);
   assert (exporter.is_cancelled == (ending != Ending.FAILED));
-  if (ending != Ending.CANCELLED_LATE || step != "palettegen") {
-    assert_cmpstr (get_log (), CompareOperator.EQ, c.log);
-  }
-
+  assert_cmpstr (get_log (), CompareOperator.EQ, c.log);
   check_captured (captured);
   unset_fake_commands ();
 }
@@ -1143,6 +1140,98 @@ void test_cancel_after_end () {
   check_captured (captured);
 }
 
+// Runs a shell script once or twice
+class ScriptStep : CliPostProcessor {
+  private string script;
+  private int runs;
+
+  public ScriptStep (string script, int runs = 1) {
+    this.script = script;
+    this.runs = runs;
+  }
+
+  public override async Array<File>? process_async (Array<File> files) throws RecordingError {
+    for (int i = 0; i < runs; i++) {
+      yield spawn_command_async ({ "/bin/sh", "-c", script });
+    }
+
+    return files;
+  }
+}
+
+// Returns the message of the error, "" if there is none
+string run_script (ScriptStep step, uint cancel_after = 0) {
+  var cancel_timeout = 0u;
+  if (cancel_after != 0) {
+    cancel_timeout = Timeout.add (cancel_after, () => {
+      cancel_timeout = 0;
+      step.cancel ();
+      return false;
+    });
+  }
+
+  string message = "";
+  try {
+    step.process_async.end (await ((callback) => {
+      step.process_async.begin (new Array<File> (), (owned) callback);
+    }));
+  } catch (RecordingError e) {
+    assert (e is RecordingError.POSTPROCESSING_ABORTED);
+    message = e.message;
+  }
+
+  assert (cancel_timeout == 0);
+  return message;
+}
+
+// More than fits into a pipe
+const string MUCH_OUTPUT = "seq -f 'out %.0f' 100000; seq -f 'err %.0f' 100000 >&2; ";
+
+void test_much_output () {
+  assert_cmpstr (run_script (new ScriptStep (MUCH_OUTPUT, 2)), CompareOperator.EQ, "");
+
+  var message = run_script (new ScriptStep (
+    MUCH_OUTPUT + "printf 'caf\\303\\251 \\377\\nthe last line'; exit 3"));
+  assert ("failed with status 768 (received signal 0)" in message);
+  assert ("err 100000\ncafé " in message);
+  assert (message.has_suffix ("the last line"));
+  assert (message.validate ());
+  assert (!("out 1\n" in message));
+  assert (message.length < 100000);
+}
+
+void test_little_output () {
+  var message = run_script (new ScriptStep ("echo one; echo two >&2; exit 1"));
+  assert (message.has_suffix (
+    "failed with status 256 (received signal 0).\n\nOutput:\none\ntwo\n"));
+  message = run_script (new ScriptStep ("kill -9 $$"));
+  assert (message.has_suffix ("failed with status 9 (received signal 9).\n\nOutput:\n"));
+}
+
+void test_cancel_output () {
+  foreach (var script in new string[] {
+    "exec yes",
+    // Keeps the pipe open after the shell was killed
+    "sleep 30 & while :; do echo x; done",
+    "exec sleep 30",
+    "exec >&- 2>&-; exec sleep 30"
+  }) {
+    var timer = new Timer ();
+    var message = run_script (new ScriptStep (script, 2), 300);
+    assert (message != "");
+    assert (timer.elapsed () < 10);
+  }
+}
+
+// Also if the step was not yet started when it was cancelled
+void test_cancel_unstarted () {
+  var marker = Path.build_filename (temp_dir, "started");
+  var step = new ScriptStep ("touch '%s'".printf (marker));
+  step.cancel ();
+  assert (run_script (step) != "");
+  assert (!FileUtils.test (marker, FileTest.EXISTS));
+}
+
 class TwoFilesStep : Object, PostProcessor {
   public async Array<File>? process_async (Array<File> files) throws RecordingError {
     var result = new Array<File> ();
@@ -1247,6 +1336,10 @@ int main (string[] args) {
   Test.add_func ("/recording_exporter/cancel_while_rendering", test_cancel_while_rendering);
   Test.add_func ("/recording_exporter/cancel_after_end", test_cancel_after_end);
   Test.add_func ("/recording_exporter/change_while_rendering", test_change_while_rendering);
+  Test.add_func ("/recording_exporter/much_output", test_much_output);
+  Test.add_func ("/recording_exporter/little_output", test_little_output);
+  Test.add_func ("/recording_exporter/cancel_output", test_cancel_output);
+  Test.add_func ("/recording_exporter/cancel_unstarted", test_cancel_unstarted);
   Test.add_func ("/recording_exporter/pipeline_input", test_pipeline_deletes_input);
   Test.add_func ("/recording_exporter/interface", test_interface);
 

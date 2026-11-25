@@ -16,7 +16,6 @@ namespace Peek.PostProcessing {
   public class BurnInPostProcessor : CliPostProcessor {
     private AnnotatedRecording recording;
     private RecordingConfig config;
-    private bool cancelled = false;
 
     public BurnInPostProcessor (AnnotatedRecording recording, RecordingConfig config) {
       this.recording = recording;
@@ -70,11 +69,6 @@ namespace Peek.PostProcessing {
       var result = new Array<File> ();
       result.append_val (File.new_for_path (output_file));
       return result;
-    }
-
-    public override void cancel () {
-      cancelled = true;
-      base.cancel ();
     }
 
     /**
@@ -189,12 +183,6 @@ namespace Peek.PostProcessing {
     private static void append (Array<string> args, string[] values) {
       foreach (var value in values) {
         args.append_val (value);
-      }
-    }
-
-    private void check_cancelled () throws RecordingError {
-      if (cancelled) {
-        throw new RecordingError.POSTPROCESSING_ABORTED ("Burning in was cancelled.");
       }
     }
   }
