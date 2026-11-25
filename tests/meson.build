@@ -71,4 +71,15 @@ if get_option('build-tests')
     ],
   )
   test('Testing snapshot', test_snapshot)
+
+  # /annotated-image/
+  test_annotated_image = executable('test-annotated-image',
+    'test-annotated-image.vala',
+    join_paths(meson.source_root(), 'src/annotation/annotated-image.vala'),
+    dependencies: [
+      dependency('gtk+-3.0'),
+      meson.get_compiler('c').find_library('m', required: false),
+    ],
+  )
+  test('Testing annotated-image', test_annotated_image)
 endif

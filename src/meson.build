@@ -6,6 +6,7 @@ peek_sources = [
   'errordomain.vala',
   'gtk-helper.vala',
   'utils.vala',
+  'annotation/annotated-image.vala',
   'dbus/freedesktop-dbus.vala',
   'dbus/freedesktop-filemanager.vala',
   'dbus/gnome-shell-screencast.vala',
@@ -59,6 +60,7 @@ peek_deps = [
   dependency('glib-2.0', version: '>= 2.38'),
   dependency('gmodule-2.0'),
   gtk,
+  meson.get_compiler('c').find_library('m', required: false),
 ]
 
 if keybinder.found()
