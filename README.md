@@ -305,9 +305,20 @@ of an app you developed, for making short tutorials or for reporting bugs.
 
 ### Can I take a still image instead of a recording?
 Yes, open the format menu and select GIF, PNG, JPEG or BMP below *Take
-snapshot*. The button, the keyboard shortcut and `--start` then save a single
+snapshot*. The button, the keyboard shortcut and `--start` then take a single
 image of the area. The image is always in full resolution and does not contain
 the mouse cursor. Snapshots require X11, the still GIF also requires FFmpeg.
+
+Every image snapshot opens a window where you can mark it up before it is
+saved: rectangle (R), circle (C), line (L), arrow (A), blur (B) and text (T),
+in six colors or a custom one, in three widths. Hold Shift for a square, a
+circle or 45° steps. Undo and redo are Ctrl+Z and Ctrl+Shift+Z. *Save* (Enter
+or Ctrl+S) opens the usual save dialog, *Copy* (Ctrl+C) puts the image on the
+clipboard, and Esc cancels, after asking if you drew something. The clipboard
+only outlives Peek if a clipboard manager is running.
+
+Blurred text can sometimes be recovered from the image, so cover real secrets
+such as passwords with something else, or do not capture them.
 
 ### What about WebM or MP4? Those are well supported on the web.
 Peek allows you to record in WebM format, just choose your preferred output

@@ -13,7 +13,10 @@ DESCRIPTION
   directly record to WebM or MP4 if you prefer.
 
   Select GIF, PNG, JPEG or BMP below "Take snapshot" in the format menu to save
-  a single still image of the area instead (X11 only).
+  a single still image of the area instead (X11 only). A window opens to
+  annotate the image (rectangle, circle, line, arrow, blur and text) before you
+  save it or copy it to the clipboard. Blurred text can sometimes be recovered,
+  so do not rely on blur to hide real secrets.
 
   Peek is not a general purpose screencast app with extended features but rather
   focuses on the single task of creating small, silent screencasts of an area of

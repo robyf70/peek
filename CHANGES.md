@@ -2,6 +2,7 @@
 - feat: Add support for GNOME 40+ (#910)
 - feat: Add sound capture settings
 - feat: Take a snapshot of the area as GIF, PNG, JPEG or BMP
+- feat: Annotate snapshots, then save them or copy them to the clipboard
 - feat: Removed issue submission from error dialog
 - feat: Removed MP4 recording option due to maintenance and performance issues
 - fix: Fix desktop integration for GNOME Flashback (#1202)
