@@ -1,8 +1,8 @@
 %undefine _debugsource_packages
 
 Name:           peek
-Version:        1.5.1
-Release:        21%{?dist}
+Version:        1.6.0
+Release:        1%{?dist}
 Summary:        Simple screen recorder with an easy to use interface
 
 License:        GPL-3.0-or-later
@@ -66,6 +66,9 @@ appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/metainfo/*.appdat
 
 
 %changelog
+* Wed Nov 25 2026 Roberto Fichera <roby.fichera@gmail.com> - 1.6.0-1
+- Annotate image snapshots and recordings
+
 * Tue Nov 24 2026 Roberto Fichera <roby.fichera@gmail.com> - 1.5.1-21
 - Take a snapshot of the area as GIF, PNG, JPEG or BMP
 

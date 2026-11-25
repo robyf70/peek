@@ -1,4 +1,4 @@
-# Version 1.6.0 - unreleased
+# Version 1.6.0 - 2026-11-25
 - feat: Add support for GNOME 40+ (#910)
 - feat: Add sound capture settings
 - feat: Take a snapshot of the area as GIF, PNG, JPEG or BMP
