@@ -40,6 +40,12 @@ namespace Peek.Recording {
     protected override void start_recording (RecordingArea area) throws RecordingError {
       bool success = false;
 
+      // Still waiting for a cancelled recording
+      if (wait_timeout != 0) {
+        Source.remove (wait_timeout);
+        wait_timeout = 0;
+      }
+
       var options = new HashTable<string, Variant> (null, null);
       options.insert ("framerate", new Variant.int32 (config.framerate));
       options.insert ("pipeline", build_gst_pipeline (area));
@@ -132,6 +138,14 @@ namespace Peek.Recording {
         stderr.printf ("Error: %s\n", e.message);
         throw new RecordingError.INITIALIZING_RECORDING_FAILED (e.message);
       }
+    }
+
+    protected override RecordingConfig create_encoding_config () {
+      // The GStreamer pipeline does not use the codec and VAAPI settings
+      var encoding_config = base.create_encoding_config ();
+      encoding_config.mp4_codec = "h264";
+      encoding_config.mp4_vaapi = false;
+      return encoding_config;
     }
 
     protected override void stop_recording () {

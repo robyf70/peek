@@ -18,6 +18,14 @@ namespace Peek.Recording {
 
     public RecordingConfig config { get; protected set; }
 
+    public RecordingConfig encoding_config { get; protected set; }
+
+    public bool defer_post_processing { get; set; default = false; }
+
+    // Values for the current recording
+    private bool is_deferred = false;
+    private bool is_capture_pending = false;
+
     private PostProcessor? active_post_processor = null;
 
     private bool _is_cancelling;
@@ -42,12 +50,26 @@ namespace Peek.Recording {
 
     protected BaseScreenRecorder () {
       config = new RecordingConfig ();
+
+      // Runs before all other handlers
+      recording_aborted.connect (() => {
+        discard_pending_capture ();
+      });
     }
 
     public void record (RecordingArea area) throws RecordingError {
       // Cancel running recording
       cancel ();
-      start_recording (area);
+      encoding_config = create_encoding_config ();
+      is_deferred = defer_post_processing;
+      is_capture_pending = is_deferred;
+      try {
+        start_recording (area);
+      } catch (RecordingError e) {
+        discard_pending_capture ();
+        throw e;
+      }
+
       start_time = get_monotonic_time ();
     }
 
@@ -64,9 +86,46 @@ namespace Peek.Recording {
     }
 
     protected void finalize_recording () {
+      if (is_deferred) {
+        hand_over_capture ();
+        return;
+      }
+
+      start_post_processing (File.new_for_path (temp_file), config);
+    }
+
+    private void hand_over_capture () {
+      // Cancelled or failed in the meantime
+      if (!is_capture_pending) {
+        return;
+      }
+
+      var file = File.new_for_path (temp_file);
+      temp_file = null;
+      is_capture_pending = false;
+      is_recording = false;
+      start_time = 0;
+      FileUtils.chmod (file.get_path (), 0644);
+      recording_captured (file);
+    }
+
+    private void discard_pending_capture () {
+      if (is_capture_pending) {
+        is_capture_pending = false;
+        remove_temp_file ();
+      }
+    }
+
+    public void post_process (File file) {
+      // Set by a cancel after the recording was captured
+      _is_cancelling = false;
+      start_post_processing (file, encoding_config);
+    }
+
+    private void start_post_processing (File captured, RecordingConfig config) {
       debug ("Started post processing");
-      var pipeline = build_post_processor_pipeline ();
-      run_post_processors_async.begin (pipeline, (obj, res) => {
+      var pipeline = build_post_processor_pipeline (config);
+      run_post_processors_async.begin (pipeline, captured, (obj, res) => {
         debug ("Finished post processing");
         try {
           var file = run_post_processors_async.end (res);
@@ -106,26 +165,38 @@ namespace Peek.Recording {
         active_post_processor.cancel ();
         active_post_processor = null;
         recording_aborted (null);
+      } else if (is_capture_pending) {
+        // Stopped, but the file is not finished yet
+        recording_aborted (null);
       }
     }
 
     protected abstract void start_recording (RecordingArea area) throws RecordingError;
     protected abstract void stop_recording ();
 
-    protected virtual PostProcessingPipeline build_post_processor_pipeline () {
+    protected virtual RecordingConfig create_encoding_config () {
+      return config.copy ();
+    }
+
+    protected virtual PostProcessingPipeline build_post_processor_pipeline (RecordingConfig config) {
       var pipeline = new PostProcessingPipeline ();
       pipeline.add_conversion (config);
       return pipeline;
     }
 
-    private async File? run_post_processors_async (PostProcessingPipeline pipeline) throws RecordingError {
+    private async File? run_post_processors_async (
+      PostProcessingPipeline pipeline, File captured) throws RecordingError {
       var files = new Array<File> ();
-      files.append_val (File.new_for_path (temp_file));
+      files.append_val (captured);
 
       active_post_processor = pipeline;
       files = yield pipeline.process_async (files);
       active_post_processor = null;
-      temp_file = null;
+
+      // Might already be that of the next recording
+      if (temp_file == captured.get_path ()) {
+        temp_file = null;
+      }
 
       if (files == null || files.length == 0) {
         return null;

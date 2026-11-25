@@ -20,15 +20,16 @@ namespace Peek.Recording {
         string[] my_args = argv[0:argv.length];
         subprocess = new Subprocess.newv (argv, SubprocessFlags.STDIN_PIPE | SubprocessFlags.STDOUT_PIPE | SubprocessFlags.STDERR_MERGE);
         input = subprocess.get_stdin_pipe ();
-        subprocess.wait_check_async.begin (null, (obj, res) => {
+        var process = subprocess;
+        process.wait_check_async.begin (null, (obj, res) => {
           bool success = false;
           int status = 0;
           int term_sig = 0;
           try {
-            success = subprocess.wait_check_async.end (res);
-            status = subprocess.get_exit_status ();
-            if (subprocess.get_if_signaled ()) {
-              term_sig = subprocess.get_term_sig ();
+            success = process.wait_check_async.end (res);
+            status = process.get_exit_status ();
+            if (process.get_if_signaled ()) {
+              term_sig = process.get_term_sig ();
             }
 
             debug ("recording process exited, term_sig: %d, exit_status: %d, success: %s",
@@ -37,6 +38,11 @@ namespace Peek.Recording {
             stderr.printf ("Error: %s\n", e.message);
             status = -1;
             success = false;
+          }
+
+          // A cancelled process might exit after the next recording was started
+          if (process != subprocess) {
+            return;
           }
 
           if (temp_file != null) {
@@ -55,16 +61,16 @@ namespace Peek.Recording {
             return;
           }
 
+          subprocess = null;
+          input = null;
+
           if (!success) {
-            string message = Utils.get_command_failed_message (my_args, subprocess);
+            string message = Utils.get_command_failed_message (my_args, process);
             var reason = new RecordingError.RECORDING_ABORTED (message);
             recording_aborted (reason);
           } else {
             finalize_recording ();
           }
-
-          subprocess = null;
-          input = null;
         });
 
 
