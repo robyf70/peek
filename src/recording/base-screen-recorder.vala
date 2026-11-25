@@ -114,18 +114,7 @@ namespace Peek.Recording {
 
     protected virtual PostProcessingPipeline build_post_processor_pipeline () {
       var pipeline = new PostProcessingPipeline ();
-
-      if (config.output_format == OutputFormat.GIF) {
-        if (config.gifski_enabled && GifskiPostProcessor.is_available ()) {
-          pipeline.add (new ExtractFramesPostProcessor ());
-          pipeline.add (new GifskiPostProcessor (config));
-        } else if (FfmpegPostProcessor.is_available ()) {
-          pipeline.add (new FfmpegPostProcessor (config));
-        }
-      } else if (config.output_format == OutputFormat.APNG) {
-        pipeline.add (new FfmpegPostProcessor (config));
-      }
-
+      pipeline.add_conversion (config);
       return pipeline;
     }
 

@@ -64,6 +64,7 @@ if get_option('build-tests')
     join_paths(meson.source_root(), 'src/utils.vala'),
     join_paths(meson.source_root(), 'src/post-processing/cli-post-processor.vala'),
     join_paths(meson.source_root(), 'src/post-processing/post-processor.vala'),
+    join_paths(meson.source_root(), 'src/recording/annotation-encoder.vala'),
     join_paths(meson.source_root(), 'src/recording/recording-area.vala'),
     join_paths(meson.source_root(), 'src/recording/snapshot.vala'),
     dependencies: [
@@ -108,4 +109,36 @@ if get_option('build-tests')
     ],
   )
   test('Testing recording-reader', test_recording_reader)
+
+  # /recording-exporter/
+  test_recording_exporter = executable('test-recording-exporter',
+    'test-recording-exporter.vala',
+    join_paths(meson.source_root(), 'src/annotation/annotated-image.vala'),
+    join_paths(meson.source_root(), 'src/annotation/annotated-recording.vala'),
+    join_paths(meson.source_root(), 'src/dbus/freedesktop-filemanager.vala'),
+    join_paths(meson.source_root(), 'src/desktop-integration.vala'),
+    join_paths(meson.source_root(), 'src/defaults.vala'),
+    join_paths(meson.source_root(), 'src/errordomain.vala'),
+    join_paths(meson.source_root(), 'src/utils.vala'),
+    join_paths(meson.source_root(), 'src/post-processing/burn-in-post-processor.vala'),
+    join_paths(meson.source_root(), 'src/post-processing/cli-post-processor.vala'),
+    join_paths(meson.source_root(), 'src/post-processing/extract-frames-post-processor.vala'),
+    join_paths(meson.source_root(), 'src/post-processing/ffmpeg-post-processor.vala'),
+    join_paths(meson.source_root(), 'src/post-processing/gifski-post-processor.vala'),
+    join_paths(meson.source_root(), 'src/post-processing/post-processing-pipeline.vala'),
+    join_paths(meson.source_root(), 'src/post-processing/post-processor.vala'),
+    join_paths(meson.source_root(), 'src/recording/annotation-encoder.vala'),
+    join_paths(meson.source_root(), 'src/recording/ffmpeg.vala'),
+    join_paths(meson.source_root(), 'src/recording/recording-area.vala'),
+    join_paths(meson.source_root(), 'src/recording/recording-config.vala'),
+    join_paths(meson.source_root(), 'src/recording/recording-exporter.vala'),
+    join_paths(meson.source_root(), 'src/recording/recording-reader.vala'),
+    join_paths(meson.source_root(), 'src/recording/snapshot.vala'),
+    vala_args: ['--pkg', 'posix'],
+    dependencies: [
+      dependency('gtk+-3.0'),
+      meson.get_compiler('c').find_library('m', required: false),
+    ],
+  )
+  test('Testing recording-exporter', test_recording_exporter, timeout: 300)
 endif

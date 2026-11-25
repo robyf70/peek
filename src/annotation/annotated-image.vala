@@ -59,7 +59,7 @@ namespace Peek.Annotations {
   * A captured image and the items drawn on it. Does not need a display.
   */
   public class AnnotatedImage : Object {
-    private const int BLUR_SIZE = 16;
+    public const int BLUR_SIZE = 16;
     private const double ARROW_ANGLE = 2.6;
 
     private Gdk.Pixbuf source;

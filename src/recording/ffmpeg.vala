@@ -10,8 +10,20 @@ This software is licensed under the GNU General Public License
 namespace Peek.Recording.Ffmpeg {
   public void add_output_parameters (
     Array<string> args, RecordingConfig config, out string extension) {
-    if (config.output_format == OutputFormat.WEBM) {
+    if (config.output_format == OutputFormat.WEBM
+      || config.output_format == OutputFormat.MP4) {
       extension = Utils.get_file_extension_for_format (config.output_format);
+    } else {
+      extension = "webm";
+    }
+
+    add_codec_parameters (args, config);
+    args.append_val ("-r");
+    args.append_val (config.framerate.to_string ());
+  }
+
+  public void add_codec_parameters (Array<string> args, RecordingConfig config) {
+    if (config.output_format == OutputFormat.WEBM) {
       args.append_val ("-codec:v");
       args.append_val ("libvpx-vp9");
       args.append_val ("-qmin");
@@ -25,7 +37,6 @@ namespace Peek.Recording.Ffmpeg {
       args.append_val ("-pix_fmt");
       args.append_val ("yuv420p");
     } else if (config.output_format == OutputFormat.MP4) {
-      extension = Utils.get_file_extension_for_format (config.output_format);
       args.append_val ("-codec:v");
       if (use_vaapi (config)) {
         // Frames arrive as VAAPI surfaces (see add_vaapi_filter), so no -pix_fmt
@@ -61,15 +72,11 @@ namespace Peek.Recording.Ffmpeg {
         args.append_val ("yuv420p");
       }
     } else {
-      extension = "webm";
       args.append_val ("-codec:v");
       args.append_val ("libvpx-vp9");
       args.append_val ("-lossless");
       args.append_val ("1");
     }
-
-    args.append_val ("-r");
-    args.append_val (config.framerate.to_string ());
   }
 
   // ponytail: first render node only, add a device setting for multi-GPU machines

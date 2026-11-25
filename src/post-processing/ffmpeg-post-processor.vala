@@ -29,11 +29,15 @@ namespace Peek.PostProcessing {
         return null;
       }
 
-      var output_file = yield generate_animation_async (input_file, palette_file);
+      File? output_file = null;
       try {
-        yield palette_file.delete_async ();
-      } catch (Error e) {
-        stderr.printf ("Error deleting palette file: %s\n", e.message);
+        output_file = yield generate_animation_async (input_file, palette_file);
+      } finally {
+        try {
+          yield palette_file.delete_async ();
+        } catch (Error e) {
+          stderr.printf ("Error deleting palette file: %s\n", e.message);
+        }
       }
 
       if (output_file == null) {

@@ -12,12 +12,16 @@ namespace Peek.Recording {
   /**
   * Takes a single still image of the recording area. X11 only.
   */
-  public class Snapshot : Object {
+  public class Snapshot : Object, AnnotationEncoder {
     private const string JPEG_QUALITY = "95";
 
     private StillGifConverter converter = new StillGifConverter ();
 
-    public bool is_cancelled { get; private set; default = false; }
+    private bool cancelled = false;
+
+    public bool is_cancelled {
+      get { return cancelled; }
+    }
 
     public static bool is_format_available (OutputFormat format) {
       // On Wayland the X11 root window does not contain native windows
@@ -73,7 +77,7 @@ namespace Peek.Recording {
     * check is_cancelled.
     */
     public void cancel () {
-      is_cancelled = true;
+      cancelled = true;
       converter.cancel ();
     }
 

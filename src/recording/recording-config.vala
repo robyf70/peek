@@ -18,5 +18,14 @@ namespace Peek.Recording {
     public bool mp4_vaapi { get; set; default = false; }
     public bool gifski_enabled { get; set; default = false; }
     public int gifski_quality { get; set; default = DEFAULT_GIFSKI_QUALITY; }
+
+    public RecordingConfig copy () {
+      return new RecordingConfig () {
+        output_format = output_format, framerate = framerate, downsample = downsample,
+        capture_mouse = capture_mouse, capture_sound = capture_sound,
+        mp4_codec = mp4_codec, mp4_vaapi = mp4_vaapi,
+        gifski_enabled = gifski_enabled, gifski_quality = gifski_quality
+      };
+    }
   }
 }

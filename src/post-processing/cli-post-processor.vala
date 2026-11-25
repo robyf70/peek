@@ -18,7 +18,7 @@ namespace Peek.PostProcessing {
 
     public abstract async Array<File>? process_async (Array<File> files) throws RecordingError;
 
-    public void cancel () {
+    public virtual void cancel () {
       if (subprocess != null) {
         subprocess.force_exit ();
       }
