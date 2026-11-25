@@ -4,6 +4,7 @@ src/ui/about-dialog.vala
 src/ui/annotation-window.vala
 src/ui/application-window.vala
 src/ui/preferences-dialog.vala
+src/ui/recording-timeline.vala
 ui/about.ui.in
 ui/annotation-window.ui
 ui/application-window.ui

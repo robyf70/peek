@@ -22,3 +22,11 @@
   font-family: sans;
   font-weight: bold;
 }
+
+.peek-timeline-list {
+  background: none;
+}
+
+.peek-timeline-list row {
+  padding: 3px 0;
+}

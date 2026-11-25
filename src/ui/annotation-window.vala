@@ -7,16 +7,17 @@ This software is licensed under the GNU General Public License
 
 using Gtk;
 using Peek.Annotations;
+using Peek.Recording;
 
 namespace Peek.Ui {
 
   /**
-  * Lets the user draw on a snapshot. The window never closes itself, its owner
+  * Lets the user draw on a snapshot or on a recording. The window never closes itself, its owner
   * has to destroy it.
   */
   [GtkTemplate (ui = "/com/uploadedlobster/peek/annotation-window.ui")]
   class AnnotationWindow : Gtk.Window {
-    private struct ToolInfo {
+    internal struct ToolInfo {
       public Tool tool;
       public string icon_name;
       public string name;
@@ -34,7 +35,8 @@ namespace Peek.Ui {
       public int width;
     }
 
-    private const ToolInfo[] TOOLS = {
+    // In the order of Tool
+    internal const ToolInfo[] TOOLS = {
       { Tool.RECTANGLE, "peek-rectangle-symbolic", N_ ("Rectangle"), "R",
         N_ ("Drag to draw a rectangle. Hold Shift for a square.") },
       { Tool.CIRCLE, "peek-circle-symbolic", N_ ("Circle"), "C",
@@ -103,6 +105,7 @@ namespace Peek.Ui {
         return _busy;
       }
       set {
+        cancel_range_drag ();
         _busy = value;
         draft = null;
         content_area.sensitive = !value;
@@ -115,6 +118,11 @@ namespace Peek.Ui {
         }
       }
     }
+
+    /**
+    * Null for snapshots.
+    */
+    public AnnotatedRecording? recording { get; private set; default = null; }
 
     [GtkChild]
     private unowned HeaderBar headerbar;
@@ -162,6 +170,9 @@ namespace Peek.Ui {
     private unowned Entry text_entry;
 
     [GtkChild]
+    private unowned Box timeline_box;
+
+    [GtkChild]
     private unowned Box status_bar;
 
     [GtkChild]
@@ -175,6 +186,15 @@ namespace Peek.Ui {
 
     private GLib.Settings settings;
     private AnnotatedImage image;
+
+    // Only set for recordings
+    private RecordingReader? reader = null;
+    private RecordingTimeline? timeline = null;
+
+    // The frame which the image shows, and the last one which could not be read
+    private int shown_frame = 0;
+    private int failed_frame = -1;
+
     private int capture_scale;
     private RadioButton[] tool_buttons = {};
     private ToggleButton[] color_buttons = {};
@@ -199,10 +219,39 @@ namespace Peek.Ui {
     public AnnotationWindow (Gtk.Window parent, Gdk.Pixbuf pixbuf, int scale,
       string format_name) {
       Object (transient_for: parent);
+      set_up (parent, new AnnotatedImage (pixbuf, scale), format_name);
+    }
 
-      image = new AnnotatedImage (pixbuf, scale);
+    /**
+    * The recording must contain the first frame. The reader gets closed with
+    * the window.
+    */
+    public AnnotationWindow.for_recording (Gtk.Window parent, AnnotatedRecording recording,
+      RecordingReader reader, string format_name) {
+      Object (transient_for: parent);
+      this.recording = recording;
+      this.reader = reader;
+      reader.frame_ready.connect (on_frame_ready);
+      reader.frame_failed.connect (on_frame_failed);
+
+      title = headerbar.title = _ ("Annotate recording");
+      save_button.tooltip_text = _ ("Save the recording (Ctrl+S)");
+      copy_button.hide ();
+
+      timeline = new RecordingTimeline (recording);
+      timeline.frame_changed.connect (on_frame_changed);
+      timeline.editing.connect (commit_text);
+      timeline.notify["selected-id"].connect (canvas.queue_draw);
+      timeline_box.add (timeline);
+      timeline_box.show ();
+
+      set_up (parent, recording, format_name);
+    }
+
+    private void set_up (Gtk.Window parent, AnnotatedImage image, string format_name) {
+      this.image = image;
       image.changed.connect (on_image_changed);
-      capture_scale = scale;
+      capture_scale = image.scale;
       settings = Peek.Application.get_app_settings ();
 
       // Questions asked by this window must not block other Peek windows
@@ -229,6 +278,10 @@ namespace Peek.Ui {
           Source.remove (entry_style_idle);
           entry_style_idle = 0;
         }
+
+        if (reader != null) {
+          reader.close ();
+        }
       });
 
       add_tool_buttons ();
@@ -250,7 +303,15 @@ namespace Peek.Ui {
     }
 
     /**
-    * Asks the user before annotations get lost. Emits either cancelled or
+    * Adds text which is still being typed, and ends drags.
+    */
+    public void confirm_pending () {
+      cancel_range_drag ();
+      commit_text ();
+    }
+
+    /**
+    * Asks the user before annotations or recordings get lost. Emits either cancelled or
     * cancel_refused, possibly later.
     */
     public void request_cancel () {
@@ -259,18 +320,20 @@ namespace Peek.Ui {
         return;
       }
 
-      if (!image.has_unsaved_changes && !has_pending_text () && draft == null) {
+      if (recording == null && !image.has_unsaved_changes && !has_pending_text () && draft == null) {
         cancelled ();
         return;
       }
 
       drop_draft ();
+      cancel_range_drag ();
 
       discard_dialog = new MessageDialog (this,
         DialogFlags.MODAL | DialogFlags.DESTROY_WITH_PARENT,
         MessageType.QUESTION, ButtonsType.NONE,
-        "%s", _ ("Discard annotations?"));
-      discard_dialog.add_button (_ ("_Cancel"), ResponseType.CANCEL);
+        "%s", recording != null ? _ ("Discard recording?") : _ ("Discard annotations?"));
+      discard_dialog.add_button (
+        recording != null ? _ ("_Keep") : _ ("_Cancel"), ResponseType.CANCEL);
       var discard_button = discard_dialog.add_button (_ ("_Discard"), ResponseType.ACCEPT);
       discard_button.get_style_context ().add_class ("destructive-action");
       discard_dialog.set_default_response (ResponseType.CANCEL);
@@ -313,13 +376,22 @@ namespace Peek.Ui {
           return true;
         }
 
-        return false;
+        // Arrow keys held for moving must not go on to the cancel button
+        return recording != null;
       }
 
       // Finish the drag before doing anything else
       if (draft != null) {
         if (key == Gdk.Key.Escape) {
           drop_draft ();
+        }
+
+        return true;
+      }
+
+      if (timeline != null && timeline.dragging) {
+        if (key == Gdk.Key.Escape) {
+          timeline.cancel_drag ();
         }
 
         return true;
@@ -333,7 +405,7 @@ namespace Peek.Ui {
       var typing = get_focus () == text_entry;
       var has_selection = typing && text_entry.get_selection_bounds (null, null);
 
-      if (ctrl && key == Gdk.Key.c && !has_selection) {
+      if (ctrl && key == Gdk.Key.c && !has_selection && recording == null) {
         copy ();
         return true;
       }
@@ -353,6 +425,10 @@ namespace Peek.Ui {
         return true;
       }
 
+      if (timeline != null && handle_timeline_key (key, mods)) {
+        return true;
+      }
+
       if (!plain) {
         return false;
       }
@@ -364,7 +440,7 @@ namespace Peek.Ui {
         case Gdk.Key.Return:
         case Gdk.Key.KP_Enter:
         case Gdk.Key.ISO_Enter:
-          if (get_focus () is Button) {
+          if (get_focus () is Button || get_focus () is ListBoxRow) {
             return false;
           }
 
@@ -382,6 +458,51 @@ namespace Peek.Ui {
       }
 
       return false;
+    }
+
+    private bool handle_timeline_key (uint key, Gdk.ModifierType mods) {
+      var shift = mods == Gdk.ModifierType.SHIFT_MASK;
+      if (mods != 0 && !shift) {
+        return false;
+      }
+
+      switch (key) {
+        case Gdk.Key.Left:
+        case Gdk.Key.KP_Left:
+        case Gdk.Key.Right:
+        case Gdk.Key.KP_Right:
+          var direction = key == Gdk.Key.Left || key == Gdk.Key.KP_Left ? -1 : 1;
+          if (shift) {
+            timeline.step_seconds (direction);
+          } else {
+            timeline.step (direction);
+          }
+
+          return true;
+        default:
+          break;
+      }
+
+      if (shift) {
+        return false;
+      }
+
+      switch (key) {
+        case Gdk.Key.Home:
+        case Gdk.Key.KP_Home:
+          timeline.move_to (0);
+          return true;
+        case Gdk.Key.End:
+        case Gdk.Key.KP_End:
+          timeline.move_to (recording.n_frames - 1);
+          return true;
+        case Gdk.Key.Delete:
+        case Gdk.Key.KP_Delete:
+          recording.remove (timeline.selected_id);
+          return true;
+        default:
+          return false;
+      }
     }
 
     private void add_tool_buttons () {
@@ -542,15 +663,16 @@ namespace Peek.Ui {
 #endif
 
       // The default size does not include the header bar
-      int header_height, toolbar_height, status_height;
+      int header_height, toolbar_height, timeline_height, status_height;
       headerbar.get_preferred_height (null, out header_height);
       toolbar.get_preferred_height (null, out toolbar_height);
+      timeline_box.get_preferred_height (null, out timeline_height);
       status_bar.get_preferred_height (null, out status_height);
 
       var device_scale = parent.get_scale_factor ();
       var width = image.width / device_scale + overlay.margin_start + overlay.margin_end + 1;
       var height = image.height / device_scale + overlay.margin_top + overlay.margin_bottom
-        + toolbar_height + status_height + 3; // Two separators
+        + toolbar_height + timeline_height + status_height + 3; // Two separators
       set_default_size (
         int.min (width, area.width * 8 / 10),
         int.min (height, area.height * 8 / 10 - header_height));
@@ -607,6 +729,52 @@ namespace Peek.Ui {
       canvas.queue_draw ();
     }
 
+    private void cancel_range_drag () {
+      if (timeline != null) {
+        timeline.cancel_drag ();
+      }
+    }
+
+    private void add_item (Annotation annotation) {
+      image.add (annotation);
+      if (timeline != null) {
+        timeline.selected_id = annotation.id;
+      }
+    }
+
+    private bool is_frame_shown () {
+      return recording == null || shown_frame == recording.current_frame;
+    }
+
+    private void on_frame_changed (int frame) {
+      if (busy || draft != null || frame == recording.current_frame) {
+        return;
+      }
+
+      commit_text ();
+      failed_frame = -1;
+      recording.current_frame = frame;
+      reader.request_frame (frame);
+    }
+
+    private void on_frame_ready (int frame, Gdk.Pixbuf pixbuf) {
+      if (pixbuf.width != image.width || pixbuf.height != image.height) {
+        on_frame_failed (frame);
+        return;
+      }
+
+      // Frames passed while moving are shown, too
+      if (frame == recording.current_frame || !is_frame_shown ()) {
+        shown_frame = frame;
+        recording.set_source (pixbuf);
+      }
+    }
+
+    private void on_frame_failed (int frame) {
+      failed_frame = frame;
+      show_hint ();
+    }
+
     private void drop_draft () {
       draft = null;
       canvas.queue_draw ();
@@ -621,7 +789,34 @@ namespace Peek.Ui {
       cr.rectangle (0, 0, image.width, image.height);
       cr.clip ();
       image.draw (cr, draft != null && is_long_enough (draft) ? draft : null);
+      draw_selection (cr, view_scale);
       return true;
+    }
+
+    private void draw_selection (Cairo.Context cr, double view_scale) {
+      var item = timeline == null ? null : recording.find (timeline.selected_id);
+      if (item == null || recording.current_frame < item.first_frame
+          || recording.current_frame > item.last_frame) {
+        return;
+      }
+
+      Gdk.Rectangle area = { 0, 0, image.width, image.height };
+      if (!area.intersect (image.get_bounds (item), out area)) {
+        return;
+      }
+
+      // Two colors to be visible on all images, one logical pixel wide
+      var line = 1 / view_scale;
+      var dash = 4 * line;
+      cr.set_line_width (line);
+      cr.rectangle (area.x + line / 2, area.y + line / 2,
+        area.width - line, area.height - line);
+      cr.set_source_rgb (0, 0, 0);
+      cr.set_dash ({ dash, dash }, 0);
+      cr.stroke_preserve ();
+      cr.set_source_rgb (1, 1, 1);
+      cr.set_dash ({ dash, dash }, dash);
+      cr.stroke ();
     }
 
     [GtkCallback]
@@ -653,7 +848,7 @@ namespace Peek.Ui {
 
       double x, y;
       to_image (event.x, event.y, out x, out y);
-      if (event.button != Gdk.BUTTON_PRIMARY
+      if (event.button != Gdk.BUTTON_PRIMARY || !is_frame_shown ()
           || x < 0 || y < 0 || x >= image.width || y >= image.height) {
         return true;
       }
@@ -694,7 +889,7 @@ namespace Peek.Ui {
       drop_draft ();
 
       if (is_long_enough (annotation)) {
-        image.add (annotation);
+        add_item (annotation);
       }
 
       return true;
@@ -725,7 +920,7 @@ namespace Peek.Ui {
       discard_text ();
 
       if (pending) {
-        image.add (annotation);
+        add_item (annotation);
       }
     }
 
@@ -804,12 +999,12 @@ namespace Peek.Ui {
     }
 
     private void undo () {
-      commit_text ();
+      confirm_pending ();
       image.undo ();
     }
 
     private void redo () {
-      commit_text ();
+      confirm_pending ();
       image.redo ();
     }
 
@@ -831,7 +1026,8 @@ namespace Peek.Ui {
 
     private void show_hint () {
       stop_copied_message ();
-      status_label.label = _ (tool.hint);
+      status_label.label = !is_frame_shown () && failed_frame == recording.current_frame
+        ? _ ("This frame could not be read.") : _ (tool.hint);
     }
 
     private void show_copied_message () {

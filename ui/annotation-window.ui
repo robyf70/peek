@@ -237,6 +237,18 @@
           </packing>
         </child>
         <child>
+          <object class="GtkBox" id="timeline_box">
+            <property name="can_focus">False</property>
+            <property name="no_show_all">True</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkSeparator">
+                <property name="visible">True</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
           <object class="GtkSeparator">
             <property name="visible">True</property>
           </object>

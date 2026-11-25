@@ -38,6 +38,7 @@ peek_sources = [
   'ui/set-window-size-dialog.vala',
   'ui/error-dialog.vala',
   'ui/preferences-dialog.vala',
+  'ui/recording-timeline.vala',
   'ui/shortcut-label.vala',
   'vapi/config.vapi',
 ]
