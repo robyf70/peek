@@ -21,6 +21,7 @@ namespace Peek.Recording {
         subprocess = new Subprocess.newv (argv, SubprocessFlags.STDIN_PIPE | SubprocessFlags.STDOUT_PIPE | SubprocessFlags.STDERR_MERGE);
         input = subprocess.get_stdin_pipe ();
         var process = subprocess;
+        var path = temp_file;
         process.wait_check_async.begin (null, (obj, res) => {
           bool success = false;
           int status = 0;
@@ -42,6 +43,7 @@ namespace Peek.Recording {
 
           // A cancelled process might exit after the next recording was started
           if (process != subprocess) {
+            remove_cancelled_file (path);
             return;
           }
 
@@ -58,6 +60,7 @@ namespace Peek.Recording {
 
           // If the recorder was cancelled no further action is required
           if (is_cancelling) {
+            remove_cancelled_file (path);
             return;
           }
 
@@ -78,6 +81,13 @@ namespace Peek.Recording {
         recording_started ();
       } catch (Error e) {
         throw new RecordingError.INITIALIZING_RECORDING_FAILED (e.message);
+      }
+    }
+
+    private static void remove_cancelled_file (string? path) {
+      // The process might have created the file after it got deleted
+      if (path != null) {
+        FileUtils.remove (path);
       }
     }
 

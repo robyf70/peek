@@ -77,7 +77,7 @@ class TestCapturingRecorder : CliScreenRecorder {
       throw new RecordingError.INITIALIZING_RECORDING_FAILED ("test");
     }
 
-    spawn_record_command ({ "sh", "-c", command });
+    spawn_record_command ({ "sh", "-c", command, path });
   }
 
   protected override void stop_recording () {
@@ -249,6 +249,31 @@ void test_deferred_cancel_after_stop () {
   assert (!recorder.file_exists ());
 }
 
+void test_cancelled_file_is_removed () {
+  foreach (var record_again in new bool[] { false, true }) {
+    // Creates its file only after it got cancelled
+    var recorder = new TestCapturingRecorder ();
+    recorder.command = "read line; sleep 0.3; : > \"$0\"";
+    recorder.start ();
+    var path = recorder.path;
+    recorder.cancel ();
+    assert (!FileUtils.test (path, FileTest.EXISTS));
+    if (record_again) {
+      recorder.command = "read line";
+      recorder.start ();
+    }
+
+    run_main_loop (600);
+    assert (!FileUtils.test (path, FileTest.EXISTS));
+    if (record_again) {
+      assert (recorder.is_recording);
+      assert (recorder.file_exists ());
+      recorder.cancel ();
+      run_main_loop (100);
+    }
+  }
+}
+
 void test_deferred_record_after_cancel () {
   var recorder = new TestCapturingRecorder ();
   recorder.defer_post_processing = true;
@@ -376,6 +401,10 @@ void main (string[] args) {
   Test.add_func (
     "/screen-recorder/cli-screen-recorder/test_deferred_cancel_after_stop",
     test_deferred_cancel_after_stop);
+
+  Test.add_func (
+    "/screen-recorder/cli-screen-recorder/test_cancelled_file_is_removed",
+    test_cancelled_file_is_removed);
 
   Test.add_func (
     "/screen-recorder/cli-screen-recorder/test_deferred_record_after_cancel",
