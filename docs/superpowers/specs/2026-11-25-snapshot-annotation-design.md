@@ -81,6 +81,21 @@ Cancel does; if refused, Peek stays open. `--stop` and Peek's Stop button act as
 Cancel. `--toggle`, `--start` and the shortcut just raise the annotation window.
 Interrupt signals still terminate at once. Several Peek windows can each annotate.
 
+**Outside events while saving (call).** Closing Peek, quitting, closing the annotation
+window or `--stop` during an encode stops it, returns to the drawing and then acts as
+Cancel there (asks if needed). The Cancel button alone just returns to the drawing.
+While the save dialog is open, `--stop`, `--toggle` and `--start` are ignored, and
+close or quit is refused: the save dialog is already the question. While the
+file is being copied, closing or quitting hides the windows and closes when the copy
+ends, as now; if it fails, the windows return with the drawing and the error.
+
+**Several windows (call).** Quit and `--stop` act per Peek window: each drawing asks its
+own question, and refusing keeps only that window open.
+
+**Responsiveness (call).** PNG, JPEG, BMP and GIF's intermediate PNG are written
+synchronously as today; a short freeze is accepted, and Cancel is only effective during
+GIF's ffmpeg step. Blur is cached per item, not recomputed on each redraw.
+
 **Window (call).** Transient for the Peek window, not modal, so the Peek frame never
 covers it. Opening size fits the image within 80% of the monitor's work area, with a
 minimum that shows the whole toolbar.
