@@ -18,6 +18,14 @@ namespace Peek.Ui {
 
   [GtkTemplate (ui = "/com/uploadedlobster/peek/application-window.ui")]
   class ApplicationWindow : Gtk.ApplicationWindow {
+    private enum SnapshotState {
+      NONE,
+      ANNOTATING,
+      ENCODING,
+      CHOOSING,
+      COPYING
+    }
+
     public ScreenRecorder recorder { get; construct set; }
 
     public bool open_file_manager { get; set; }
@@ -107,8 +115,19 @@ namespace Peek.Ui {
     // before the snapshot got saved.
     private OutputFormat? snapshot_format = null;
 
+    private SnapshotState snapshot_state = SnapshotState.NONE;
+
+    // Set unless the snapshot state is NONE
+    private AnnotationWindow? annotation_window = null;
+
     // Set while a snapshot is being encoded
     private Snapshot? active_snapshot = null;
+
+    // The drawing shall be cancelled, too, once a cancelled encode has ended
+    private bool cancel_after_encode = false;
+
+    // Peek shall close once the snapshot is done
+    private bool close_requested = false;
 
     private signal void recording_finished ();
 
@@ -278,14 +297,22 @@ namespace Peek.Ui {
         this.is_postprocessing.to_string ()
       );
 
-      if (active_snapshot != null) {
-        // Nothing got saved yet, discard the snapshot and close.
-        this.recording_finished.connect (() => {
-          this.close ();
-        });
-        this.hide ();
-        active_snapshot.cancel ();
-        return true;
+      switch (snapshot_state) {
+        case SnapshotState.ANNOTATING:
+        case SnapshotState.ENCODING:
+          close_requested = true;
+          cancel_annotation ();
+          return true;
+        case SnapshotState.CHOOSING:
+          // The save dialog is already asking what to do
+          return true;
+        case SnapshotState.COPYING:
+          close_requested = true;
+          annotation_window.hide ();
+          this.hide ();
+          return true;
+        default:
+          break;
       }
 
       if (recorder.is_recording || this.is_postprocessing) {
@@ -616,7 +643,10 @@ namespace Peek.Ui {
     }
 
     private void prepare_start_recording () {
-      if (is_recording) return;
+      if (is_recording) {
+        present_annotation_window ();
+        return;
+      }
 
       enter_recording_state ();
       var delay = this.recording_start_delay;
@@ -653,7 +683,9 @@ namespace Peek.Ui {
     private void prepare_stop_recording () {
       if (!is_recording) return;
 
-      if (delay_indicator_timeout != 0) {
+      if (snapshot_state != SnapshotState.NONE) {
+        cancel_annotation ();
+      } else if (delay_indicator_timeout != 0) {
         Source.remove (delay_indicator_timeout);
         delay_indicator_timeout = 0;
         leave_recording_state ();
@@ -661,9 +693,6 @@ namespace Peek.Ui {
         Source.remove (start_recording_event_source);
         start_recording_event_source = 0;
         leave_recording_state ();
-      } else if (active_snapshot != null) {
-        stop_button.sensitive = false;
-        active_snapshot.cancel ();
       } else if (!recorder.is_recording) {
         return;
       } else {
@@ -694,7 +723,7 @@ namespace Peek.Ui {
     }
 
     private void toggle_recording () {
-      if (is_recording) {
+      if (is_recording && snapshot_state == SnapshotState.NONE) {
         prepare_stop_recording ();
       } else {
         prepare_start_recording ();
@@ -752,45 +781,133 @@ namespace Peek.Ui {
 
       start_recording_event_source = Timeout.add (SNAPSHOT_REDRAW_DELAY, () => {
         start_recording_event_source = 0;
-        is_postprocessing = true;
-        save_snapshot.begin ();
+        annotate_snapshot ();
         return false;
       });
     }
 
-    private async void save_snapshot () {
-      var snapshot = new Snapshot ();
-
+    private void annotate_snapshot () {
       try {
         var pixbuf = Snapshot.grab (get_recording_area ());
-        show_spinner ();
-        active_snapshot = snapshot;
-        in_file = yield snapshot.encode (pixbuf, snapshot_format);
-        active_snapshot = null;
-        hide_spinner ();
-
-        if (snapshot.is_cancelled) {
-          leave_recording_state ();
-          return;
-        }
-
-        stop_button.sensitive = false;
-        show_file_chooser ();
+        annotation_window = new AnnotationWindow (this, pixbuf,
+          recording_view.get_scale_factor (), get_format_name (snapshot_format));
       } catch (RecordingError e) {
-        active_snapshot = null;
-
-        if (snapshot.is_cancelled) {
-          leave_recording_state ();
-          return;
-        }
-
         stderr.printf ("Failed to take snapshot: %s\n", e.message);
         leave_recording_state ();
         ErrorDialog.present_single_instance (
           this,
           _ ("The snapshot could not be taken."),
           e);
+        return;
       }
+
+      snapshot_state = SnapshotState.ANNOTATING;
+      annotation_window.save_requested.connect (on_save_requested);
+      annotation_window.cancelled.connect (leave_recording_state);
+      annotation_window.cancel_refused.connect (on_cancel_refused);
+      annotation_window.encode_cancel_requested.connect (on_encode_cancel_requested);
+      annotation_window.close_requested.connect (on_annotation_close_requested);
+      annotation_window.present ();
+    }
+
+    private async void encode_annotated () {
+      var snapshot = new Snapshot ();
+      var pixbuf = annotation_window.render ();
+      snapshot_state = SnapshotState.ENCODING;
+      active_snapshot = snapshot;
+      cancel_after_encode = false;
+      annotation_window.busy = true;
+      show_spinner ();
+
+      RecordingError? error = null;
+      try {
+        in_file = yield snapshot.encode (pixbuf, snapshot_format);
+      } catch (RecordingError e) {
+        error = e;
+      }
+
+      active_snapshot = null;
+      hide_spinner ();
+
+      if (snapshot.is_cancelled) {
+        resume_annotation ();
+
+        if (cancel_after_encode) {
+          cancel_annotation ();
+        }
+      } else if (error != null) {
+        stderr.printf ("Failed to encode snapshot: %s\n", error.message);
+        resume_annotation ();
+        ErrorDialog.present_single_instance (
+          this,
+          _ ("The image could not be created."),
+          error);
+      } else {
+        snapshot_state = SnapshotState.CHOOSING;
+        stop_button.sensitive = false;
+        show_file_chooser ();
+      }
+    }
+
+    /**
+    * Returns to the drawing after a save that did not succeed.
+    */
+    private void resume_annotation () {
+      discard_temp_file ();
+      this.out_file = null;
+      snapshot_state = SnapshotState.ANNOTATING;
+      stop_button.sensitive = true;
+      annotation_window.busy = false;
+    }
+
+    /**
+    * Gives up the drawing, if the user agrees. The request is ignored while a
+    * file is being selected or saved.
+    */
+    private void cancel_annotation () {
+      if (snapshot_state == SnapshotState.ANNOTATING) {
+        annotation_window.request_cancel ();
+      } else if (snapshot_state == SnapshotState.ENCODING) {
+        // Wait for the end of the encode, it still has to clean up
+        cancel_after_encode = true;
+        active_snapshot.cancel ();
+      }
+    }
+
+    private void present_annotation_window () {
+      if (snapshot_state == SnapshotState.ANNOTATING
+          || snapshot_state == SnapshotState.ENCODING) {
+        annotation_window.present ();
+      }
+    }
+
+    private void destroy_annotation_window () {
+      snapshot_state = SnapshotState.NONE;
+
+      if (annotation_window != null) {
+        annotation_window.destroy ();
+        annotation_window = null;
+      }
+    }
+
+    private void on_save_requested () {
+      if (snapshot_state == SnapshotState.ANNOTATING) {
+        encode_annotated.begin ();
+      }
+    }
+
+    private void on_cancel_refused () {
+      close_requested = false;
+    }
+
+    private void on_encode_cancel_requested () {
+      if (snapshot_state == SnapshotState.ENCODING) {
+        active_snapshot.cancel ();
+      }
+    }
+
+    private void on_annotation_close_requested () {
+      cancel_annotation ();
     }
 
     private void enter_recording_state () {
@@ -814,6 +931,7 @@ namespace Peek.Ui {
     }
 
     private void leave_recording_state () {
+      destroy_annotation_window ();
       this.out_file = null;
       this.snapshot_format = null;
       delay_indicator.hide ();
@@ -825,26 +943,30 @@ namespace Peek.Ui {
       pop_menu_button.set_sensitive (true);
       unfreeze_window_size ();
       hide_spinner ();
+      discard_temp_file ();
+      recording_finished ();
 
-      // Forget the file now, a new recording might start while it gets deleted
-      var temp_file = this.in_file;
-      this.in_file = null;
-
-      if (temp_file != null) {
-        debug ("Deleting temp file %s\n", temp_file.get_uri ());
-        temp_file.delete_async.begin (Priority.DEFAULT, null, (obj, res) => {
-          try {
-            bool delete_success = temp_file.delete_async.end (res);
-            debug ("Temp file deleted: %s\n", delete_success.to_string ());
-          } catch (Error e) {
-            stderr.printf ("Temp file delete error: %s\n", e.message);
-          }
-
-          recording_finished ();
-        });
-      } else {
-        recording_finished ();
+      if (close_requested) {
+        close_requested = false;
+        this.close ();
       }
+    }
+
+    private void discard_temp_file () {
+      if (this.in_file == null) {
+        return;
+      }
+
+      debug ("Deleting temp file %s\n", this.in_file.get_uri ());
+
+      // Not async, Peek might quit right after this
+      try {
+        this.in_file.delete ();
+      } catch (Error e) {
+        stderr.printf ("Temp file delete error: %s\n", e.message);
+      }
+
+      this.in_file = null;
     }
 
     private void update_input_shape () {
@@ -909,15 +1031,20 @@ namespace Peek.Ui {
     private void show_file_chooser () {
       var format = snapshot_format ?? recorder.config.output_format;
       var title = format.is_image () ? _ ("Save image") : _ ("Save animation");
+      Gtk.Window parent = this;
+      if (annotation_window != null) {
+        parent = annotation_window;
+      }
 
       #if HAS_GTK_FILECHOOSERNATIVE
       var chooser = new FileChooserNative (
-        title, this, FileChooserAction.SAVE,
+        title, parent, FileChooserAction.SAVE,
         _ ("_Save"),
         _ ("_Cancel"));
+      chooser.modal = annotation_window != null;
       #else
       var chooser = new FileChooserDialog (
-        title, this, FileChooserAction.SAVE,
+        title, parent, FileChooserAction.SAVE,
         _ ("_Cancel"),
         ResponseType.CANCEL);
       var ok_button = chooser.add_button (_ ("_Save"), ResponseType.ACCEPT);
@@ -944,12 +1071,16 @@ namespace Peek.Ui {
       if (chooser.run () == ResponseType.ACCEPT) {
         debug ("Selected file %s", chooser.get_uri ());
         this.out_file = chooser.get_file ();
-        try_save_file ();
-      } else {
-        if (snapshot_format == null) {
-          recorder.cancel ();
+
+        if (snapshot_state != SnapshotState.NONE) {
+          snapshot_state = SnapshotState.COPYING;
         }
 
+        try_save_file ();
+      } else if (snapshot_state != SnapshotState.NONE) {
+        resume_annotation ();
+      } else {
+        recorder.cancel ();
         leave_recording_state ();
       }
 
@@ -977,6 +1108,7 @@ namespace Peek.Ui {
               out_file.get_uri ());
 
             if (copy_success) {
+              destroy_annotation_window ();
               handle_saved_file (out_file);
             } else {
               var message = "Saving file %s failed.".printf (out_file.get_uri ());
@@ -985,12 +1117,28 @@ namespace Peek.Ui {
             }
           } catch (Error e) {
             stderr.printf ("File save error: %s\n", e.message);
+
+            if (snapshot_state != SnapshotState.NONE) {
+              close_requested = false;
+              resume_annotation ();
+
+              if (!this.visible) {
+                // The window manager would choose a new position
+                int x, y;
+                get_position (out x, out y);
+                this.show ();
+                move (x, y);
+                annotation_window.show ();
+              }
+            }
+
             ErrorDialog.present_single_instance (
               this,
               _ ("The file could not be saved to the selected location."),
               e);
           }
-          finally {
+
+          if (snapshot_state == SnapshotState.NONE) {
             leave_recording_state ();
           }
         });

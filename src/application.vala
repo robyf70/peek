@@ -103,8 +103,10 @@ namespace Peek {
 
     public void request_quit () {
       debug ("Application was requested to quit");
-      foreach (var window in this.get_windows ()) {
-        window.close ();
+      foreach (var window in this.get_windows ().copy ()) {
+        if (window is ApplicationWindow) {
+          window.close ();
+        }
       }
     }
 
