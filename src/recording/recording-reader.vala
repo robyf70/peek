@@ -14,6 +14,9 @@ namespace Peek.Recording {
     private const string FRAME_TIME_KEY = "best_effort_timestamp_time=";
     private const string START_TIME_KEY = "start_time=";
 
+    // Codecs of ffmpeg do not recommend more
+    private const uint MAX_THREADS = 16;
+
     private string path;
     private double[] times = {};
     private GenericArray<Subprocess> processes = new GenericArray<Subprocess> ();
@@ -42,6 +45,7 @@ namespace Peek.Recording {
       // Packets are not the same as frames, VP8 has packets that show nothing.
       string[] argv = {
         "ffprobe", "-v", "error",
+        "-threads", uint.min (get_num_processors (), MAX_THREADS).to_string (),
         "-select_streams", "v:0",
         "-show_entries", "frame=best_effort_timestamp_time:format=start_time",
         "-of", "default=nw=1",

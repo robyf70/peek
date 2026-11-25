@@ -155,7 +155,7 @@ void set_fake_commands (string script) {
 
 void unset_fake_commands () {
   Environment.set_variable ("PATH", old_path, true);
-  foreach (var name in new string[] { "ffmpeg", "ffprobe", "pid" }) {
+  foreach (var name in new string[] { "ffmpeg", "ffprobe", "pid", "args" }) {
     FileUtils.remove (Path.build_filename (dir, name));
   }
 }
@@ -167,6 +167,25 @@ case "$0" in
   exit 0;;
 esac
 """;
+
+// The option only has an effect before the file
+void test_threads () {
+  set_fake_commands ("echo \"$*\" > \"${0%/*}/args\"\n" + FAKE_PROBE);
+  var path = Path.build_filename (dir, "clip");
+  var reader = new RecordingReader (File.new_for_path (path));
+  string arguments = "";
+  try {
+    assert (read_times (reader).length == 2);
+    FileUtils.get_contents (Path.build_filename (dir, "args"), out arguments);
+  } catch (Error e) {
+    error (e.message);
+  }
+
+  unset_fake_commands ();
+  var threads = int.min ((int) get_num_processors (), 16);
+  assert (" -threads %i ".printf (threads) in arguments);
+  assert (arguments.has_suffix (" " + path + "\n"));
+}
 
 void test_parse_times () {
   var times = RecordingReader.parse_times (
@@ -470,6 +489,7 @@ int main (string[] args) {
 
   old_path = Environment.get_variable ("PATH");
 
+  Test.add_func ("/recording_reader/threads", test_threads);
   Test.add_func ("/recording_reader/parse_times", test_parse_times);
   Test.add_func ("/recording_reader/parse_times_no_start", test_parse_times_no_start);
   Test.add_func ("/recording_reader/parse_times_empty", test_parse_times_empty);
